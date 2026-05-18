@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGlow" cx="68%" cy="44%" r="55%">
+      <stop offset="0%" stop-color="#0F1829"/>
+      <stop offset="100%" stop-color="#0A0E1A"/>
+    </radialGradient>
+    <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="1" fill="#1C2E4A" opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0A0E1A"/>
+  <rect width="1200" height="630" fill="url(#bgGlow)"/>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <!-- KC monogram bars (left accent) -->
+  <!-- K: vertical spine -->
+  <rect x="54" y="90" width="30" height="450" rx="4" fill="#C65D3A"/>
+  <!-- K: upper arm -->
+  <rect x="100" y="90" width="24" height="195" rx="4" fill="#C65D3A"/>
+  <!-- K: lower arm -->
+  <rect x="100" y="345" width="24" height="195" rx="4" fill="#C65D3A"/>
+  <!-- C: upper stroke -->
+  <rect x="142" y="90" width="24" height="70" rx="4" fill="#C65D3A"/>
+  <!-- C: left stroke -->
+  <rect x="142" y="200" width="24" height="230" rx="4" fill="#C65D3A"/>
+  <!-- C: lower stroke -->
+  <rect x="142" y="470" width="24" height="70" rx="4" fill="#C65D3A"/>
+
+  <!-- Vertical separator -->
+  <rect x="206" y="90" width="1" height="450" fill="#1C2E4A"/>
+
+  <!-- Main title -->
+  <text
+    x="238"
+    y="308"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-weight="800"
+    font-size="82"
+    fill="#FFFFFF"
+    letter-spacing="-2"
+  >US Data Center</text>
+  <text
+    x="238"
+    y="406"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-weight="800"
+    font-size="82"
+    fill="#FFFFFF"
+    letter-spacing="-2"
+  >Power Map</text>
+
+  <!-- Terracotta accent rule -->
+  <rect x="238" y="434" width="72" height="4" rx="2" fill="#C65D3A"/>
+
+  <!-- URL -->
+  <text
+    x="238"
+    y="552"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-weight="500"
+    font-size="28"
+    fill="#C65D3A"
+    letter-spacing="3"
+  >map.kevinclark.ai</text>
+</svg>

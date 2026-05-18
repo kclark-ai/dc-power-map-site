@@ -1,43 +1,67 @@
-# Astro Starter Kit: Minimal
+# US Data Center Power Map
 
-```sh
-npm create astro@latest -- --template minimal
-```
+An interactive map of every US data center overlaid with power plant fuel mix, NERC grid zones, water stress data, and emerging AI campus development. Built to visualize the infrastructure dependencies of AI compute at national scale.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+**Live:** [map.kevinclark.ai](https://map.kevinclark.ai)  
+**Status:** Live  
+**Facilities mapped:** 1,499 data centers · 10,831 power plants  
+**Built with:** Claude Code  
 
-## 🚀 Project Structure
+---
 
-Inside of your Astro project, you'll see the following folders and files:
+## The argument
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+AI infrastructure is an energy policy problem.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Most conversations about AI focus on models, benchmarks, and deployment cost. The infrastructure layer — where the power comes from, how stressed the grid is, whether the water supply can sustain cooling demand — gets almost no attention until something breaks.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+This map makes that layer visible. Every data center in the US, overlaid with the fuel mix powering it, the reliability risk of its grid zone, and the water stress of its county. The picture it reveals is not reassuring.
 
-Any static assets, like images, can be placed in the `public/` directory.
+---
 
-## 🧞 Commands
+## What it shows
 
-All commands are run from the root of the project, from a terminal:
+**1,499 data center facilities** — existing, under construction, and planned through 2026 — mapped against:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- **Power plant fuel mix** — Coal, Natural Gas, Nuclear, Solar, Wind, Hydro. Color-coded by fuel type so the energy profile of any region is immediately visible.
+- **Emerging campuses** — Planned and under-construction facilities (2026), showing where AI compute demand is heading before it arrives.
+- **NERC Grid Zones** — Reliability regions with 2024 LTRA stress assessment. High Risk, Elevated, Moderate, Low Risk overlays sourced from the WECC Long Term Reliability Assessment 2024.
+- **Water Stress** — WRI Aqueduct county-level baseline water stress. Data centers are among the largest industrial water consumers in the US.
+- **PPAs filter** — Toggle to show only facilities with direct power purchase agreements.
 
-## 👀 Want to learn more?
+---
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Data sources
+
+| Dataset | Source | Version |
+|---|---|---|
+| Data center facilities | PNRL IMK Atlas | v2026.02 |
+| Power plant locations and fuel mix | EIA 860/923 | 2025 |
+| Grid reliability zones | NERC LTRA | 2024 |
+| Water stress | WRI Aqueduct | County-level baseline |
+
+---
+
+## Stack
+
+- Astro
+- React
+- Mapbox GL JS
+- Energy infrastructure data pipeline
+
+Built entirely in Claude Code.
+
+---
+
+## Why this matters for AI strategy
+
+The compute layer has physical constraints that no amount of model optimization eliminates. Grid capacity, fuel mix, water availability, and transmission reliability are hard limits on where AI infrastructure can scale — and how sustainably it can do so.
+
+Understanding those constraints is part of the AI leader's job. This map is a tool for that understanding.
+
+The pattern it reveals: the regions absorbing the most new AI campus development are not always the regions with the cleanest energy or the most reliable grids. That gap is a strategic and policy problem that will define AI infrastructure decisions for the next decade.
+
+---
+
+→ [kevinclark.ai](https://kevinclark.ai) — writing and projects  
+→ [kc@kevinclark.ai](mailto:kc@kevinclark.ai)

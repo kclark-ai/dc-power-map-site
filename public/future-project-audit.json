@@ -1,0 +1,655 @@
+{
+  "reviewedAt": "2026-10-18",
+  "scope": "Triage of inherited future-project labels only. No current status or national completeness verification.",
+  "inventorySha256": "1fd039a9e6b521a73e74bece59e3127db2ca8142a9ea93ddbaa267a7b8e5aa0b",
+  "projectRegisterSha256": "b3b313ecbe49bffcc9528603eae1dc696c5ce9f5b32efb83cfdc8dba363e1848",
+  "reviewLedgerSha256": "c5de7d5cce8fdb84f019dd287f250b0bdf1916830f33831f23e3098e1f78f964",
+  "summary": {
+    "deskReviewedRecords": 20,
+    "withoutMatchingPrimaryEvidence": 5,
+    "inheritedFutureRecords": 20,
+    "withScopeReviewNotes": 10,
+    "withoutDatedPhaseNotes": 10,
+    "withAttachedPrimaryStatusUrl": 0,
+    "confirmedPhaseIdentities": 0
+  },
+  "records": [
+    {
+      "id": "dc_emerging_0001",
+      "name": "xAI Colossus Supercluster",
+      "operator": "xAI",
+      "state": "Tennessee",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0001",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "The inventory has both operating and construction labels at different coordinates. Exact scope and site identity are unresolved; do not merge or relabel automatically.",
+        "sources": [
+          {
+            "url": "https://x.ai/news/series-c",
+            "scope": "Original Colossus; not Colossus 2 or later expansions"
+          }
+        ],
+        "searchScope": "Dated primary publications recorded in the sourced phase register.",
+        "evidenceNeeded": "Resolve campus/building/phase identity and coordinates; establish current status using dated evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 960,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "xai-colossus-operating"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0002",
+      "name": "Microsoft AI Campus — Racine County",
+      "operator": "Microsoft",
+      "state": "Wisconsin",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0002",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Two inherited Wisconsin records need campus and phase reconciliation. No inventory coordinate has been confirmed for this phase.",
+        "sources": [
+          {
+            "url": "https://news.microsoft.com/source/2026/06/23/microsoft-completes-construction-on-first-datacenter-facility-in-mount-pleasant-wisconsin/",
+            "scope": "First facility; not the full campus"
+          }
+        ],
+        "searchScope": "Dated primary publications recorded in the sourced phase register.",
+        "evidenceNeeded": "Resolve campus/building/phase identity and coordinates; establish current status using dated evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 400,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "ms-fairwater-1",
+        "ms-fairwater-2"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0003",
+      "name": "Microsoft AI Campus — Mt. Pleasant",
+      "operator": "Microsoft",
+      "state": "Wisconsin",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0003",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Two inherited Wisconsin records need campus and phase reconciliation. No inventory coordinate has been confirmed for this phase.",
+        "sources": [
+          {
+            "url": "https://news.microsoft.com/source/2026/06/23/microsoft-completes-construction-on-first-datacenter-facility-in-mount-pleasant-wisconsin/",
+            "scope": "First facility; not the full campus"
+          }
+        ],
+        "searchScope": "Dated primary publications recorded in the sourced phase register.",
+        "evidenceNeeded": "Resolve campus/building/phase identity and coordinates; establish current status using dated evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 200,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "ms-fairwater-1",
+        "ms-fairwater-2"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0004",
+      "name": "Microsoft Data Center — Cheyenne",
+      "operator": "Microsoft",
+      "state": "Wyoming",
+      "listedStatus": "planned",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0004",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "The inherited Cheyenne construction entry may describe another project. City-level name matching does not establish parcel, building or phase identity. Basin replenishment commitments do not identify the campus water supply.",
+        "sources": [
+          {
+            "url": "https://news.microsoft.com/source/2026/04/14/microsoft-announces-intent-to-expand-datacenter-operations-in-cheyenne-accelerating-innovation-and-economic-growth/",
+            "scope": "Proposed 3,200-acre expansion; not the existing operating footprint"
+          }
+        ],
+        "searchScope": "Dated primary publications recorded in the sourced phase register.",
+        "evidenceNeeded": "Resolve campus/building/phase identity and coordinates; establish current status using dated evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 300,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "ms-cheyenne-land-intent"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0005",
+      "name": "Microsoft Azure Campus — Goodyear",
+      "operator": "Microsoft",
+      "state": "Arizona",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0005",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Microsoft describes Goodyear as operating on its undated community page. The inherited construction entry could concern a later phase; neither an opening date nor a phase match is established.",
+        "sources": [
+          {
+            "url": "https://local.microsoft.com/communities/americas/greater-phoenix/",
+            "scope": "Undated operator description observed October 18, 2026; observation date is not opening date."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Building or parcel identifier and a dated phase-specific construction or operating record.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 350,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0006",
+      "name": "Google Nuclear SMR Campus — Hamlin Township",
+      "operator": "Google",
+      "state": "Pennsylvania",
+      "listedStatus": "planned",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0006",
+        "reviewedAt": "2026-10-18",
+        "outcome": "no_matching_primary_evidence",
+        "finding": "No matching primary evidence was established for the named Google nuclear-SMR campus in Hamlin Township, Pennsylvania. This is an unresolved claim, not a finding that no project exists.",
+        "sources": [],
+        "searchScope": "Exact project/operator/place searches, including Hamlin Township, Pennsylvania; no matching primary project record established.",
+        "evidenceNeeded": "Operator announcement and township/permit record identifying the parcel, developer and phase.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 500,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0007",
+      "name": "Google Cloud Region — Bridgeport",
+      "operator": "Google",
+      "state": "West Virginia",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0007",
+        "reviewedAt": "2026-10-18",
+        "outcome": "no_matching_primary_evidence",
+        "finding": "No matching primary evidence was established for a Google Cloud region in Bridgeport, West Virginia. Google’s Alabama location page concerns Jackson County, Alabama; it cannot verify this West Virginia entry.",
+        "sources": [
+          {
+            "url": "https://www.datacenters.google/locations/alabama/",
+            "scope": "Different state; contextual comparison only, not a candidate match."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "West Virginia parcel or permit identity and an operator publication connecting Google to this project.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 100,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0008",
+      "name": "Google Data Center — Virginia Beach",
+      "operator": "Google",
+      "state": "Virginia",
+      "listedStatus": "planned",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0008",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Google documents a Virginia Beach subsea cable landing. Cable infrastructure does not substantiate the inherited 200 MW data center claim.",
+        "sources": [
+          {
+            "url": "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/delivering-increased-connectivity-with-our-first-private-trans-atlantic-subsea-cable/",
+            "scope": "Dunant cable announcement; not a data center construction source."
+          },
+          {
+            "url": "https://www.datacenters.google/locations/virginia/",
+            "scope": "Regional context; no phase match established."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Data center parcel, construction record, operator identity and a definition/source for capacity.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 200,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0009",
+      "name": "Amazon AWS Nuclear Campus — Berwick",
+      "operator": "Amazon Web Services",
+      "state": "Pennsylvania",
+      "listedStatus": "planned",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0009",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "A dated announcement is not current construction confirmation. Inventory identity and coordinates remain unresolved.",
+        "sources": [
+          {
+            "url": "https://www.aboutamazon.com/news/aws/amazon-pennsylvania-investment-cloud-infrastructure-ai-innovation",
+            "scope": "Announced campus investment; permits, construction and individual phases not established"
+          }
+        ],
+        "searchScope": "Dated primary publications recorded in the sourced phase register.",
+        "evidenceNeeded": "Resolve campus/building/phase identity and coordinates; establish current status using dated evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 960,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "aws-salem-announcement"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0010",
+      "name": "Amazon AWS Campus — Prince William County",
+      "operator": "Amazon Web Services",
+      "state": "Virginia",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0010",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "AWS documents data center infrastructure in Prince William County, but county-level presence does not identify the inherited 500 MW campus or its current phase.",
+        "sources": [
+          {
+            "url": "https://www.aboutamazon.com/news/aws/aws-commitment-to-virginia",
+            "scope": "Regional infrastructure and investment; not phase-specific verification."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Campus address, building/phase identity, dated construction evidence and load definition.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 500,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0011",
+      "name": "Meta AI Campus — Huntsville",
+      "operator": "Meta",
+      "state": "Alabama",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0011",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Meta’s dated two-building expansion announcement provides context. It does not establish current completion, the inherited AI label or 200 MW.",
+        "sources": [
+          {
+            "url": "https://datacenters.atmeta.com/2022/06/huntsville-were-growing/",
+            "scope": "June 9, 2022 expansion announcement."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Building/phase reconciliation and later dated operating or construction evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 200,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "meta-huntsville-expansion"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0012",
+      "name": "Meta AI Data Center — DeKalb",
+      "operator": "Meta",
+      "state": "Illinois",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0012",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Operating and construction entries coexist in this inventory. Resolve campus/building/phase identity before merging or counting.",
+        "sources": [
+          {
+            "url": "https://datacenters.atmeta.com/2023/11/dekalb-we-are-online/",
+            "scope": "Serving-traffic milestone; does not establish completion of every building"
+          }
+        ],
+        "searchScope": "Dated primary publications recorded in the sourced phase register.",
+        "evidenceNeeded": "Resolve campus/building/phase identity and coordinates; establish current status using dated evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 150,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "meta-dekalb-online"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0013",
+      "name": "Meta AI Campus — Temple",
+      "operator": "Meta",
+      "state": "Texas",
+      "listedStatus": "planned",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0013",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Potential match to the inherited Temple campus; exact identity, coordinate and any separate expansion remain unresolved.",
+        "sources": [
+          {
+            "url": "https://datacenters.atmeta.com/2026/07/temple-we-are-online/",
+            "scope": "Data center serving traffic; later expansion scope not established"
+          }
+        ],
+        "searchScope": "Dated primary publications recorded in the sourced phase register.",
+        "evidenceNeeded": "Resolve campus/building/phase identity and coordinates; establish current status using dated evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 300,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "meta-temple-online"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0014",
+      "name": "CoreWeave GPU Supercluster — Muskogee",
+      "operator": "CoreWeave",
+      "state": "Oklahoma",
+      "listedStatus": "planned",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0014",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Core Scientific reports 100 MW total and approximately 70 MW critical IT load at groundbreaking. The inherited 1,000 MW claim is uncorroborated; host and tenant roles must stay separate.",
+        "sources": [
+          {
+            "url": "https://investors.corescientific.com/news-events/press-releases/detail/99/core-scientific-and-port-muskogee-break-ground-on-100-mw-hpc-data-center",
+            "scope": "November 18, 2024 groundbreaking; 2026 operation was a target."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Confirmed site/phase match and later in-service evidence; distinguish total facility power from IT load.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 1000,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "core-scientific-muskogee-groundbreaking"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0015",
+      "name": "Stargate / OpenAI — Abilene",
+      "operator": "OpenAI / Oracle / SoftBank",
+      "state": "Texas",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0015",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "The inherited construction entry may include unfinished phases. Initial operations do not establish completion, campus demand or a verified coordinate for every building.",
+        "sources": [
+          {
+            "url": "https://openai.com/index/five-new-stargate-sites/",
+            "scope": "Initial training and inference workloads; not completion of the entire campus"
+          }
+        ],
+        "searchScope": "Dated primary publications recorded in the sourced phase register.",
+        "evidenceNeeded": "Resolve campus/building/phase identity and coordinates; establish current status using dated evidence.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 1200,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [
+        "stargate-abilene-operating",
+        "stargate-abilene-potential-expansion"
+      ],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "dated_scope_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0016",
+      "name": "Google Cloud Expansion — Licking County",
+      "operator": "Google",
+      "state": "Ohio",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0016",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Google identifies New Albany, Lancaster and Columbus communities in Ohio. This regional page does not establish the identity or current stage of the inherited Licking County expansion.",
+        "sources": [
+          {
+            "url": "https://www.datacenters.google/locations/ohio/",
+            "scope": "Undated operator regional page observed October 18, 2026; not a phase-specific date."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Expansion parcel/building identifier, dated approval or construction evidence and capacity definition.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 500,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0017",
+      "name": "Apple Data Center — Waukee Expansion",
+      "operator": "Apple",
+      "state": "Iowa",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0017",
+        "reviewedAt": "2026-10-18",
+        "outcome": "related_source_scope_unresolved",
+        "finding": "Waukee’s June 20, 2025 staff report describes a fitout of Apple’s existing building, mechanical equipment and parking. Staff recommended approval; that recommendation is not a final approval or proof of completed construction.",
+        "sources": [
+          {
+            "url": "https://www.waukee.org/DocumentCenter/View/16782/Staff-Report_Morgan-Site-AZ2-Fitout_SP_062025",
+            "scope": "Municipal staff report, pages 1–3; distinct from a final decision."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Final decision, permit/building identity, construction or completion evidence, and relationship to the inherited expansion.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 160,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0018",
+      "name": "CoreWeave Compute Campus — Blue Bell",
+      "operator": "CoreWeave",
+      "state": "Pennsylvania",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0018",
+        "reviewedAt": "2026-10-18",
+        "outcome": "no_matching_primary_evidence",
+        "finding": "CoreWeave’s Pennsylvania announcement identifies Lancaster. It cannot substantiate the separately named Blue Bell campus; no matching primary evidence for Blue Bell was established.",
+        "sources": [
+          {
+            "url": "https://investors.coreweave.com/news/news-details/2025/CoreWeave-Announces-Multi-Billion-Dollar-Commitment-to-AI-Infrastructure-in-Pennsylvania/default.aspx",
+            "scope": "July 15, 2025 Lancaster announcement; different location, not a candidate match."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Blue Bell parcel, operator project announcement and phase-specific public record.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 150,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0019",
+      "name": "Amazon AWS Clarksburg Campus",
+      "operator": "Amazon Web Services",
+      "state": "Maryland",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0019",
+        "reviewedAt": "2026-10-18",
+        "outcome": "no_matching_primary_evidence",
+        "finding": "No matching primary evidence was established for the named AWS Clarksburg, Maryland campus. Other Maryland projects must not be substituted on a state-level name match.",
+        "sources": [],
+        "searchScope": "Exact AWS/Amazon Clarksburg, Maryland campus searches; no matching primary project record established.",
+        "evidenceNeeded": "Clarksburg parcel/project number, developer/operator link and dated permit or construction record.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 300,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    },
+    {
+      "id": "dc_emerging_0020",
+      "name": "Microsoft AI Infrastructure — Redmond Expansion",
+      "operator": "Microsoft",
+      "state": "Washington",
+      "listedStatus": "under_construction",
+      "deskReview": {
+        "inventoryId": "dc_emerging_0020",
+        "reviewedAt": "2026-10-18",
+        "outcome": "no_matching_primary_evidence",
+        "finding": "Microsoft describes chip-testing labs on its Redmond campus. A lab description does not establish the inherited 250 MW AI data center expansion.",
+        "sources": [
+          {
+            "url": "https://news.microsoft.com/source/features/ai/in-house-chips-silicon-to-service-to-meet-ai-demand/",
+            "scope": "November 15, 2023 research and testing context; no expansion verification."
+          }
+        ],
+        "searchScope": "Operator publications and project/local-government sources; no comprehensive permit search claimed.",
+        "evidenceNeeded": "Redmond parcel and phase-specific planning/construction record, and a source defining capacity.",
+        "currentStatusVerified": false,
+        "coordinateVerified": false
+      },
+      "inventoryTimestamp": "2026-05-16",
+      "inventoryCapacityMw": 250,
+      "primaryStatusUrlAttached": false,
+      "scopeReviewProjectIds": [],
+      "reviewState": "desk_review_complete_unresolved",
+      "phaseEvidence": "no_dated_phase_note",
+      "confirmedPhaseIdentity": false,
+      "confirmedElectricalDemandMw": null
+    }
+  ]
+}

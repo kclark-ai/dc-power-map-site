@@ -1,0 +1,197 @@
+{
+  "recordId": "the-dalles-or",
+  "stationId": "USGS-14105700",
+  "stationName": "Columbia River at The Dalles, OR",
+  "relationship": "Regional river context; not a verified source-water or campus-impact gauge",
+  "openingYear": 2006,
+  "openingSource": "https://www.datacenters.google/locations/oregon/",
+  "stationUrl": "https://waterdata.usgs.gov/monitoring-location/USGS-14105700/",
+  "downloadUrl": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-14105700&parameter_code=00060&statistic_id=00003&datetime=2000-01-01%2F2025-12-31&limit=10000",
+  "retrievedAt": "2026-10-17T02:14:24.484488Z",
+  "metric": "Annual mean of daily mean discharge",
+  "unit": "ft\u00b3/s",
+  "rows": [
+    {
+      "year": 2000,
+      "meanCfs": 177248.36,
+      "days": 366,
+      "expectedDays": 366,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2001,
+      "meanCfs": 112108.49,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2002,
+      "meanCfs": 169544.11,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2003,
+      "meanCfs": 153718.36,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2004,
+      "meanCfs": 150296.72,
+      "days": 366,
+      "expectedDays": 366,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2005,
+      "meanCfs": 148032.6,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2006,
+      "meanCfs": 188388.22,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2007,
+      "meanCfs": 163795.89,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2008,
+      "meanCfs": 169812.3,
+      "days": 366,
+      "expectedDays": 366,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2009,
+      "meanCfs": 162836.16,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2010,
+      "meanCfs": 150102.74,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2011,
+      "meanCfs": 239930.14,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2012,
+      "meanCfs": 217833.06,
+      "days": 366,
+      "expectedDays": 366,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2013,
+      "meanCfs": 172435.34,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2014,
+      "meanCfs": 181451.78,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2015,
+      "meanCfs": 154709.86,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2016,
+      "meanCfs": 168716.67,
+      "days": 366,
+      "expectedDays": 366,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2017,
+      "meanCfs": 225096.16,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2018,
+      "meanCfs": 197191.51,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2019,
+      "meanCfs": 153957.81,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2020,
+      "meanCfs": 172195.9,
+      "days": 366,
+      "expectedDays": 366,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2021,
+      "meanCfs": 151247.67,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2022,
+      "meanCfs": 161726.58,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2023,
+      "meanCfs": 133453.97,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2024,
+      "meanCfs": 130003.83,
+      "days": 366,
+      "expectedDays": 366,
+      "provisionalDays": 0
+    },
+    {
+      "year": 2025,
+      "meanCfs": 140564.11,
+      "days": 365,
+      "expectedDays": 365,
+      "provisionalDays": 43
+    }
+  ]
+}

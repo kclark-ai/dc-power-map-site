@@ -1,67 +1,55 @@
-# US Data Center Power Map
+# Data Center Resource Map
 
-An interactive map of every US data center overlaid with power plant fuel mix, NERC grid zones, water stress data, and emerging AI campus development. Built to visualize the infrastructure dependencies of AI compute at national scale.
+An independent research preview by Kevin Clark. Explore an inherited US facility inventory, electricity-generation context, selected reported water use, documented supply relationships, and watershed geography. `/evidence/` explains sources, reporting periods, missing fields, and limitations.
 
-**Live:** [map.kevinclark.ai](https://map.kevinclark.ai)  
-**Status:** Live  
-**Facilities mapped:** 1,499 data centers · 10,831 power plants  
-**Built with:** Claude Code  
+## Local development
 
----
+Use Node >=22.22.0 (`nvm use` reads `.nvmrc`).
 
-## The argument
+```sh
+npm ci
+cp .env.example .env.local
+# Set the existing public Mapbox token in .env.local.
+npm run dev
+```
 
-AI infrastructure is an energy policy problem.
+Astro may background development when invoked by an agent; `npm run dev -- --ignore-lock` runs in the foreground. Only the Mapbox token is needed. No database, analytics, or server credentials are required. Never commit `.env.local`.
 
-Most conversations about AI focus on models, benchmarks, and deployment cost. The infrastructure layer — where the power comes from, how stressed the grid is, whether the water supply can sustain cooling demand — gets almost no attention until something breaks.
+## Quality and deployment
 
-This map makes that layer visible. Every data center in the US, overlaid with the fuel mix powering it, the reliability risk of its grid zone, and the water stress of its county. The picture it reveals is not reassuring.
+```sh
+npm run check          # Astro + TypeScript
+npm run test           # shared-view parsing, data checks, reviewed checksums
+npm run verify         # checks + tests + static production build
+npm run release:check  # configuration + verify + dependency audit
+```
 
----
+The deployable static output is `dist/`. See [DEPLOYMENT.md](DEPLOYMENT.md) for hosting, cache/security headers, token restrictions, rollback, and scale limits. The GitHub workflow validates changes without publishing. The public Mapbox token must be set in the hosting build environment.
 
-## What it shows
+## Experience
 
-**1,499 data center facilities** — existing, under construction, and planned through 2026 — mapped against:
+- Persistent Overview, Water, and Energy views.
+- Facility tabs for Overview, Water, History, and Sources, with keyboard tab navigation.
+- Mobile bottom sheet that collapses to expose the map.
+- Water disclosures sorted by consumption; search by location, operator, watershed name, or HUC.
+- Shared links retain stable facility ID, selected tab, camera, watershed level, layers, and fuel filters.
+- Evidence labels distinguish reports, inventory fields, geographic context, and unknowns.
+- Map engine loads separately; water geography is fetched when needed. Current snapshots are suitable for static CDN hosting; national high-resolution geometry should use tiles rather than a growing monolithic file.
 
-- **Power plant fuel mix** — Coal, Natural Gas, Nuclear, Solar, Wind, Hydro. Color-coded by fuel type so the energy profile of any region is immediately visible.
-- **Emerging campuses** — Planned and under-construction facilities (2026), showing where AI compute demand is heading before it arrives.
-- **NERC Grid Zones** — Reliability regions with 2024 LTRA stress assessment. High Risk, Elevated, Moderate, Low Risk overlays sourced from the WECC Long Term Reliability Assessment 2024.
-- **Water Stress** — WRI Aqueduct county-level baseline water stress. Data centers are among the largest industrial water consumers in the US.
-- **PPAs filter** — Toggle to show only facilities with direct power purchase agreements.
+## Data and methodology
 
----
+The retained inventory has 1,499 facility records. The inherited 2023 plant snapshot has 14,793 rows; six displayed fuel categories contain 11,159 rows. These are record counts, not independently verified unique active facilities/plants. Newer EIA data has not been imported with reproducible lineage.
 
-## Data sources
+Water coverage is 26 Google US reporting locations for 2025, with 16 curated map associations and three separately documented supply references. Daily figures are annual averages; repeated campus views must not be summed. Historical Columbia River discharge at The Dalles is regional context, not a campus water-supply monitor or an attribution study.
 
-| Dataset | Source | Version |
-|---|---|---|
-| Data center facilities | PNRL IMK Atlas | v2026.02 |
-| Power plant locations and fuel mix | EIA 860/923 | 2025 |
-| Grid reliability zones | NERC LTRA | 2024 |
-| Water stress | WRI Aqueduct | County-level baseline |
+`scripts/audit-data.mjs` regenerates `public/evidence-audit.json` after reviewed changes. `scripts/validate-water.mjs` checks associations, quantities, watershed hierarchy, and historical coverage. `scripts/check-evidence.mjs` rejects unreviewed data changes whose checksums no longer match the public evidence snapshot. `WATER-DATA.md` records detailed methodology and review history.
 
----
+Unsupported risk scores, campus PPA assertions, inferred campus electricity mix, 50 MW demand assumptions, and synthetic CO2 totals are withheld. Missing evidence means unknown, not zero.
 
-## Stack
+### Grid context and comparisons
 
-- Astro
-- React
-- Mapbox GL JS
-- Energy infrastructure data pipeline
+Facilities, Energy, Grid and Water are peer views. Grid overlays load local GeoJSON only when selected; no boundary overlay is enabled by default. `src/data/grid-manifest.json` records source endpoints, original source dates, simplification and SHA-256 hashes. The four datasets are historical snapshots: NERC regions/subregions (2010), ISO/RTO footprints (2020), planning areas (2019), and retail territories (2015–2019). Retired NERC entities remain in the source and are deliberately labeled historical. These are not present operational boundaries or confirmed electrical relationships.
 
-Built entirely in Claude Code.
+`python3 scripts/fetch-grid-context.py` downloads the public snapshots through system curl with TLS verification. Review metadata before refreshing; updating the hosting copy does not establish a newer boundary vintage. `npm test` verifies grid file integrity, geometry bounds, point-in-polygon holes, and shared grid state.
 
----
-
-## Why this matters for AI strategy
-
-The compute layer has physical constraints that no amount of model optimization eliminates. Grid capacity, fuel mix, water availability, and transmission reliability are hard limits on where AI infrastructure can scale — and how sustainably it can do so.
-
-Understanding those constraints is part of the AI leader's job. This map is a tool for that understanding.
-
-The pattern it reveals: the regions absorbing the most new AI campus development are not always the regions with the cleanest energy or the most reliable grids. That gap is a strategic and policy problem that will define AI infrastructure decisions for the next decade.
-
----
-
-→ [kevinclark.ai](https://kevinclark.ai) — writing and projects  
-→ [kc@kevinclark.ai](mailto:kc@kevinclark.ai)
+Facility Grid tabs separate inherited inventory MW and utility fields from measured demand, IT load, requested connection, study status and energization. Geographic matches are lazy, bounding-box filtered and explicitly unconfirmed. Region exports include source metadata and intersecting inventory records; comparison supports up to three facilities and JSON evidence export, with repeated water-reporting locations flagged. No MW or water totals are aggregated. Live demand, forecasts, upgrade capacity and queues are linked to primary resources but are not imported into this release. Comparisons are session-local, not persisted in shared URLs.

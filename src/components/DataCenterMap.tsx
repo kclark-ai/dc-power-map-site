@@ -1,35 +1,45 @@
+import type * as GeoJSON from 'geojson';
+import FacilityPanel, {type FacilityTab} from './FacilityPanel';
+import {parseView,serializeView} from '../lib/view-state.mjs';
+import WaterExplorer from './WaterExplorer';
+import GridExplorer,{GridLayerSelect} from './GridExplorer';
+import FacilityComparison from './FacilityComparison';
+import FacilityDirectory from './FacilityDirectory';
+import gridManifest from '../data/grid-manifest.json';
+import {loadGrid,geometryBounds} from '../lib/grid-context.mjs';
+import {WATER_RECORDS,type WaterRecord,dailyGallons} from '../lib/water-data';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
+import type {Map as MapboxMap,GeoJSONSource} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 const C = {
-  bg:       '#040e1f',
-  surface:  '#071524',
-  surface2: '#0c1d30',
-  surface3: '#12263d',
-  border:   '#1c3352',
-  border2:  '#2a4b70',
-  text:     '#dae7f5',
-  text2:    '#6990b3',
-  text3:    '#3a5570',
-  green:    '#00e87a',
+  bg:       '#FAFAF7',
+  surface:  '#FAFAF7',
+  surface2: '#F3F2EF',
+  surface3: '#E8E6E1',
+  border:   '#E8E6E1',
+  border2:  '#D4D1CB',
+  text:     '#0A0A0A',
+  text2:    '#525252',
+  text3:    '#70706B',
+  green:    '#9A6B1E',
   orange:   '#ff7235',
   red:      '#ff2d55',
 } as const;
 
-const MONO = "'IBM Plex Mono', 'Courier New', monospace";
+const MONO = "'JetBrains Mono', 'Courier New', monospace";
 const SANS = "'Inter', system-ui, -apple-system, sans-serif";
 
 const FUEL: Record<string, string> = {
-  coal:        '#f43f5e',
-  natural_gas: '#fb923c',
-  nuclear:     '#a78bfa',
-  solar:       '#fbbf24',
-  wind:        '#34d399',
-  hydro:       '#38bdf8',
+  coal:        '#665d59',
+  natural_gas: '#ba8150',
+  nuclear:     '#817395',
+  solar:       '#B89535',
+  wind:        '#6d9381',
+  hydro:       '#4A7A8C',
   other:       '#4a6280',
 };
 
@@ -71,240 +81,16 @@ type MapStats = {
 
 // ── Tour stops ────────────────────────────────────────────────────────────────
 const TOUR_STOPS: TourStop[] = [
-  {
-    id: 'nova', label: 'Northern Virginia',
-    center: [-77.48, 38.92], zoom: 9.5,
-    title: 'Data Center Alley',
-    headline: '35% of all global internet traffic transits this 30-mile corridor in Loudoun County',
-    facts: [
-      '304 data centers concentrated around Ashburn — the densest cluster on Earth',
-      'Dominion Energy grid: ~40% natural gas, forcing new gas peaker plant construction to keep up',
-      'Power demand here rivals mid-sized US cities; substations are running out of capacity',
-    ],
-    color: C.orange,
-  },
-  {
-    id: 'texas', label: 'Texas — DFW + Austin',
-    center: [-97.2, 32.5], zoom: 7.5,
-    title: 'The Isolated Grid',
-    headline: 'ERCOT is an island — when demand spikes, Texas cannot borrow power from neighboring states',
-    facts: [
-      'Data center capacity growing 40%+ year-over-year — the fastest market in the US',
-      'Grid runs ~50% natural gas; hyperscalers absorb spare capacity from west Texas wind farms',
-      'February 2021 grid failure exposed the price of isolation: 246 people died, $200B in damage',
-    ],
-    color: '#fbbf24',
-  },
-  {
-    id: 'phoenix', label: 'Phoenix, Arizona',
-    center: [-111.97, 33.44], zoom: 9.5,
-    title: 'Desert Computing',
-    headline: 'Each large data center consumes 3–5 million gallons of water per day for evaporative cooling',
-    facts: [
-      "The Colorado River — Phoenix's primary water source — is at historic lows after decades of drought",
-      'Arizona grid: ~40% natural gas + ~30% nuclear from Palo Verde, the largest plant in the US',
-      'Mesa and Chandler are the fastest-growing data center submarkets in the country',
-    ],
-    color: C.red,
-  },
-  {
-    id: 'pnw', label: 'Pacific Northwest',
-    center: [-120.3, 47.5], zoom: 7.5,
-    title: 'The Green Grid',
-    headline: "BPA's hydroelectric grid makes this the cleanest compute region in the continental US",
-    facts: [
-      'Bonneville Power Administration: ~70% hydroelectric, ~15% wind, under 5% fossil fuels',
-      'Google (The Dalles, OR), Microsoft (Quincy, WA), and Amazon run their largest campuses here',
-      'Columbia River dams provide cheap, reliable, carbon-free baseload — the ideal data center power',
-    ],
-    color: C.green,
-  },
+ {id:'nova',label:'Northern Virginia',center:[-77.48,38.92],zoom:9.5,title:'Explore the inventory',headline:'Facility locations are a starting point for research.',facts:['Markers come from the retained location inventory; status and operator are not independently verified for every record.','A concentration of markers does not establish measured electricity demand.','Use Sources & evidence for coverage and reporting dates.'],color:C.orange},
+ {id:'phoenix',label:'Phoenix, Arizona',center:[-111.97,33.44],zoom:9.5,title:'Water evidence',headline:'Water use varies by reporting location and cooling system.',facts:['Open the water view to inspect annual disclosures and their daily averages.','A nearby river does not establish a water-supply connection.','Unknown water use does not mean zero.'],color:'#9A6B1E'},
+ {id:'pnw',label:'The Dalles, Oregon',center:[-121.2013,45.63205],zoom:10,title:'History and supply',headline:'Supply pathways and river conditions answer different questions.',facts:['The documented municipal supply includes surface water and groundwater.','The historical Columbia River chart provides regional context, not a campus-impact estimate.','Source links, reporting years, and comparison coverage are included in the water panel.'],color:C.green},
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function getMixColor(mix: PowerMix): string {
-  if (!mix) return C.text3;
-  const clean = (mix.nuclear || 0) + (mix.solar || 0) + (mix.wind || 0) + (mix.hydro || 0);
-  const gas   = mix.natural_gas || 0;
-  const coal  = mix.coal || 0;
-  if (clean < 0.05 && gas < 0.05 && coal < 0.05) return C.text3;
-  if (clean > gas && clean > coal) return C.green;
-  if (gas > coal) return C.orange;
-  return C.red;
-}
+function getMixColor(_mix: PowerMix): string { return '#303A39'; }
 
 const AMBER = '#f59e0b';
-const LAVENDER = '#818cf8';
-
-// NERC 2024 Long-Term Reliability Assessment risk levels
-const NERC_STRESS: Record<string, { level: string; color: string; badge: string; note: string }> = {
-  RFC:  { level: 'High Risk',     color: '#ef4444', badge: '▲ HIGH RISK',  note: 'PJM footprint: generator retirements outpacing new capacity; NERC projects potential shortfalls 2026–2030' },
-  MRO:  { level: 'High Risk',     color: '#ef4444', badge: '▲ HIGH RISK',  note: 'Upper Midwest: rapid coal retirements with insufficient wind/solar replacement confirmed in NERC 2024 LTRA' },
-  TRE:  { level: 'Elevated Risk', color: '#f97316', badge: '◆ ELEVATED',   note: 'ERCOT: grid isolation blocks emergency imports; 2021 failure caused 246 deaths and $200B in damage' },
-  SERC: { level: 'Elevated Risk', color: '#f97316', badge: '◆ ELEVATED',   note: 'Southeast: AI data center and EV load surging in Carolinas, Georgia, and Virginia — exceeding utility capacity plans' },
-  WECC: { level: 'Moderate Risk', color: '#eab308', badge: '● MODERATE',   note: 'West: drought reduces hydro output; CAISO faces summer peak gaps; heat dome vulnerability in Pacific Northwest' },
-  NPCC: { level: 'Moderate Risk', color: '#eab308', badge: '● MODERATE',   note: 'Northeast: ISO-NE winter gas constraints; aging transmission with limited new build in New England' },
-  SPP:  { level: 'Low Risk',      color: '#4ade80', badge: '○ LOW RISK',   note: 'Great Plains: wind-rich grid with strong reserve margins; well-interconnected with MISO and WECC' },
-  FRCC: { level: 'Moderate Risk', color: '#eab308', badge: '● MODERATE',   note: 'Florida (SERC subregion): high cooling load density and hurricane exposure; managed under SERC since 2022' },
-};
-const NERC_DEFAULT = { level: 'Unknown', color: '#4a6280', badge: '? UNKNOWN', note: 'Stress assessment not available for this NERC region' };
-
-// ── Inline NERC GeoJSON ───────────────────────────────────────────────────────
-function mkNercFeature(key: string, coords: [number, number][]): GeoJSON.Feature {
-  const s = NERC_STRESS[key] || NERC_DEFAULT;
-  return {
-    type: 'Feature',
-    geometry: { type: 'Polygon', coordinates: [coords] },
-    properties: { _key: key, _color: s.color, _badge: s.badge, _label: key, _note: s.note, _level: s.level },
-  };
-}
-
-const NERC_GEO: GeoJSON.FeatureCollection = {
-  type: 'FeatureCollection',
-  features: [
-    // WECC — Western Electricity Coordinating Council
-    mkNercFeature('WECC', [
-      [-124.5, 49.0], [-104.1, 49.0], [-104.1, 41.0], [-111.5, 37.0],
-      [-114.0, 32.5], [-117.1, 32.5], [-120.5, 33.9], [-124.5, 40.5], [-124.5, 49.0],
-    ]),
-    // TRE — Texas RE (ERCOT)
-    mkNercFeature('TRE', [
-      [-106.6, 36.5], [-100.0, 36.5], [-94.0, 36.5],
-      [-93.5, 29.8], [-97.0, 25.8], [-100.5, 25.8], [-106.6, 31.5], [-106.6, 36.5],
-    ]),
-    // SPP — Southwest Power Pool (Great Plains)
-    mkNercFeature('SPP', [
-      [-104.1, 49.0], [-88.5, 49.0], [-88.5, 35.5],
-      [-88.5, 29.0], [-94.0, 29.0], [-94.0, 36.5], [-100.0, 36.5],
-      [-104.1, 36.5], [-104.1, 41.0], [-104.1, 49.0],
-    ]),
-    // MRO — Midwest Reliability Organization (Upper Midwest)
-    mkNercFeature('MRO', [
-      [-104.1, 49.0], [-82.5, 49.0], [-82.5, 45.5],
-      [-88.5, 44.5], [-88.5, 49.0], [-104.1, 49.0],
-    ]),
-    // RFC — ReliabilityFirst (PJM / Great Lakes / Mid-Atlantic)
-    mkNercFeature('RFC', [
-      [-88.5, 44.5], [-74.0, 44.5], [-74.0, 38.5],
-      [-77.0, 36.5], [-84.0, 35.0], [-88.5, 35.5], [-88.5, 44.5],
-    ]),
-    // SERC — SERC Reliability Corporation (Southeast)
-    mkNercFeature('SERC', [
-      [-94.0, 36.5], [-77.0, 36.5], [-75.0, 34.5],
-      [-79.9, 31.0], [-87.6, 31.0], [-88.5, 29.0],
-      [-94.0, 29.0], [-94.0, 36.5],
-    ]),
-    // NPCC — Northeast Power Coordinating Council
-    mkNercFeature('NPCC', [
-      [-74.0, 44.5], [-66.9, 47.5], [-66.9, 40.4],
-      [-74.0, 38.5], [-74.0, 44.5],
-    ]),
-    // FRCC — Florida Reliability Coordinating Council
-    mkNercFeature('FRCC', [
-      [-87.6, 31.0], [-79.9, 31.0], [-80.0, 24.4],
-      [-82.0, 24.4], [-87.6, 26.0], [-87.6, 31.0],
-    ]),
-  ],
-};
-
-// ── Inline Water Stress counties ─────────────────────────────────────────────
-// [west_lon, south_lat, east_lon, north_lat, stress_score (1=Low … 5=Extremely High)]
-// Focus on 10 DC-dense states + key stressed markets
-const WATER_COUNTIES: [number, number, number, number, number][] = [
-  // Arizona — extremely high stress
-  [-113.5, 33.0, -111.0, 33.9, 5], // Maricopa (Phoenix)
-  [-112.0, 32.4, -110.4, 33.5, 5], // Pinal
-  [-112.2, 31.3, -110.5, 32.5, 4], // Pima (Tucson)
-  [-114.8, 32.5, -114.0, 33.0, 5], // Yuma
-  // Nevada
-  [-115.9, 35.0, -114.1, 36.9, 5], // Clark (Las Vegas)
-  [-120.0, 39.3, -118.4, 42.0, 4], // Washoe (Reno)
-  [-120.0, 38.8, -119.3, 39.3, 4], // Douglas
-  // California — high/very high stress
-  [-118.9, 33.7, -117.6, 34.8, 5], // Los Angeles
-  [-117.6, 32.5, -116.1, 33.5, 5], // San Diego
-  [-118.1, 33.4, -117.4, 33.9, 4], // Orange
-  [-117.7, 33.4, -114.5, 34.0, 5], // Riverside
-  [-117.6, 34.0, -114.1, 35.8, 4], // San Bernardino
-  [-120.1, 34.9, -118.0, 35.8, 5], // Kern
-  [-119.3, 34.0, -118.5, 34.5, 4], // Ventura
-  [-122.2, 37.1, -121.2, 37.5, 4], // Santa Clara (Silicon Valley)
-  [-122.4, 37.4, -121.4, 37.9, 4], // Alameda
-  [-122.4, 37.8, -121.5, 38.1, 3], // Contra Costa
-  [-121.9, 38.2, -121.0, 38.7, 3], // Sacramento
-  // Colorado — high stress (Front Range)
-  [-105.1, 39.6, -104.7, 39.9, 4], // Denver
-  [-105.5, 39.5, -105.0, 39.9, 4], // Jefferson
-  [-104.9, 39.6, -104.6, 39.9, 4], // Arapahoe
-  [-105.2, 39.3, -104.6, 39.6, 4], // Douglas (CO)
-  [-105.1, 39.8, -104.5, 40.2, 4], // Adams
-  // New Mexico
-  [-106.9, 34.9, -106.4, 35.2, 5], // Bernalillo (Albuquerque)
-  // Utah
-  [-112.2, 40.5, -111.7, 40.9, 4], // Salt Lake
-  [-111.9, 40.1, -111.5, 40.5, 4], // Utah County
-  // Texas
-  [-106.5, 31.6, -105.9, 32.1, 5], // El Paso
-  [-100.1, 27.5, -99.4, 28.2,  5], // Webb (Laredo)
-  [-98.7,  26.1, -98.0, 26.5,  5], // Hidalgo (McAllen)
-  [-98.9,  29.2, -98.2, 29.8,  4], // Bexar (San Antonio)
-  [-98.2,  30.1, -97.4, 30.6,  4], // Travis (Austin)
-  [-97.9,  30.5, -97.2, 30.9,  3], // Williamson
-  [-97.5,  32.5, -97.0, 33.0,  3], // Tarrant (Fort Worth)
-  [-97.0,  32.6, -96.5, 33.0,  3], // Dallas
-  [-97.4,  33.0, -96.9, 33.4,  3], // Denton
-  [-96.8,  33.1, -96.4, 33.6,  3], // Collin
-  [-95.9,  29.5, -95.0, 30.1,  3], // Harris (Houston)
-  [-96.0,  29.4, -95.4, 29.9,  3], // Fort Bend
-  // Virginia — Northern Virginia (moderate stress)
-  [-77.9,  38.9, -77.3, 39.3,  2], // Loudoun
-  [-77.7,  38.6, -77.2, 38.9,  2], // Prince William
-  [-77.5,  38.6, -77.1, 38.9,  2], // Fairfax
-  [-77.2,  38.8, -77.0, 38.9,  2], // Arlington
-  // Georgia
-  [-84.7,  33.6, -84.3, 34.1,  2], // Fulton (Atlanta)
-  [-84.9,  33.6, -84.6, 34.0,  2], // Douglas (GA)
-  [-84.0,  33.5, -83.6, 33.9,  2], // Newton
-  // North Carolina
-  [-78.9,  35.6, -78.5, 36.0,  2], // Wake (Raleigh)
-  [-80.9,  35.0, -80.5, 35.5,  2], // Mecklenburg (Charlotte)
-  // South Carolina
-  [-81.3,  33.9, -80.8, 34.2,  2], // Richland (Columbia)
-  // New Jersey
-  [-74.3,  40.8, -73.9, 41.1,  2], // Bergen
-  [-74.3,  40.7, -74.1, 40.9,  2], // Essex
-  // New York
-  [-74.1,  41.0, -73.5, 41.4,  2], // Westchester
-  [-73.8,  40.6, -73.4, 40.9,  2], // Nassau
-  // Illinois
-  [-88.3,  41.6, -87.5, 42.2,  1], // Cook (Chicago)
-  [-88.3,  41.6, -87.9, 42.1,  1], // DuPage
-  // Ohio
-  [-83.2,  39.9, -82.8, 40.2,  1], // Franklin (Columbus)
-  [-81.9,  41.3, -81.4, 41.6,  1], // Cuyahoga (Cleveland)
-  // Indiana
-  [-86.4,  39.6, -85.9, 40.0,  2], // Marion (Indianapolis)
-  // Michigan
-  [-83.3,  42.1, -82.9, 42.5,  1], // Wayne (Detroit)
-  [-84.0,  42.1, -83.5, 42.5,  1], // Washtenaw (Ann Arbor)
-  // Oregon
-  [-122.9, 45.4, -122.3, 45.7, 2], // Multnomah (Portland)
-  [-118.9, 45.6, -118.3, 46.0, 3], // Umatilla (data center corridor)
-  // Washington
-  [-122.5, 47.1, -121.8, 47.8, 2], // King (Seattle)
-  [-119.7, 47.0, -119.0, 47.4, 3], // Grant (Quincy DC hub)
-  // Florida
-  [-80.6,  25.2, -80.1, 25.9,  2], // Miami-Dade
-  [-80.6,  25.9, -80.1, 26.4,  2], // Broward
-  [-80.5,  26.4, -80.0, 26.9,  2], // Palm Beach
-];
-
-const CO2_KG_PER_MWH: Record<string, number> = {
-  coal: 1001, natural_gas: 469, nuclear: 12, solar: 46, wind: 11, hydro: 24, other: 500,
-};
-const CAPACITY_FACTOR: Record<string, number> = {
-  coal: 0.50, natural_gas: 0.40, nuclear: 0.90, solar: 0.22, wind: 0.35, hydro: 0.38, other: 0.40,
-};
+const LAVENDER = '#B6A17D';
 
 function searchAll(q: string, dcs: DataCenter[], plants: any[]): SearchResult[] {
   if (q.trim().length < 2) return [];
@@ -370,53 +156,14 @@ function findNearestPlants(dcLat: number, dcLon: number, plants: any[], n = 3): 
     .slice(0, n);
 }
 
-const FUEL_ORDER = [
-  { key: 'nuclear',     label: 'Nuclear'     },
-  { key: 'solar',       label: 'Solar'       },
-  { key: 'wind',        label: 'Wind'        },
-  { key: 'hydro',       label: 'Hydro'       },
-  { key: 'natural_gas', label: 'Natural Gas' },
-  { key: 'coal',        label: 'Coal'        },
-  { key: 'other',       label: 'Other'       },
-];
-
 // ── Shared primitives ─────────────────────────────────────────────────────────
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{
-      fontFamily: MONO, fontSize: 9, fontWeight: 600,
-      letterSpacing: '0.14em', textTransform: 'uppercase', color: C.text3,
-      marginBottom: 12,
-    }}>
-      {children}
-    </div>
-  );
-}
-
-function Divider() {
-  return <div style={{ height: 1, background: C.border }} />;
-}
-
-function Badge({ color, children }: { color: string; children: React.ReactNode }) {
-  return (
-    <span style={{
-      fontFamily: MONO, fontSize: 9, fontWeight: 600, letterSpacing: '0.1em',
-      padding: '3px 8px', borderRadius: 3, textTransform: 'uppercase',
-      background: `${color}18`, color, border: `1px solid ${color}35`,
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-    }}>
-      {children}
-    </span>
-  );
-}
-
 function Toggle({
   on, onChange, label, sublabel, disabled,
 }: {
   on: boolean; onChange: () => void; label: string; sublabel?: string; disabled?: boolean;
 }) {
   return (
-    <div
+    <div role="switch" aria-label={label} aria-checked={on} aria-disabled={disabled} tabIndex={disabled?-1:0} onKeyDown={e=>{if(!disabled&&(e.key==='Enter'||e.key===' ')){e.preventDefault();onChange()}}}
       onClick={disabled ? undefined : onChange}
       style={{
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
@@ -459,7 +206,7 @@ function FuelCheckbox({
   color: string; label: string; checked: boolean; onChange: () => void; disabled?: boolean;
 }) {
   return (
-    <div
+    <div role="checkbox" aria-label={label} aria-checked={checked} aria-disabled={disabled} tabIndex={disabled?-1:0} onKeyDown={e=>{if(!disabled&&(e.key==='Enter'||e.key===' ')){e.preventDefault();onChange()}}}
       onClick={disabled ? undefined : onChange}
       style={{
         display: 'flex', alignItems: 'center', gap: 10,
@@ -486,216 +233,13 @@ function FuelCheckbox({
 }
 
 // ── FuelBar ───────────────────────────────────────────────────────────────────
-function FuelBar({ mix }: { mix: PowerMix }) {
-  const segments = FUEL_ORDER.map(f => ({ ...f, v: (mix as any)[f.key] || 0 })).filter(f => f.v > 0.01);
-  return (
-    <div>
-      <div style={{ display: 'flex', height: 3, borderRadius: 2, overflow: 'hidden', background: C.surface3, marginBottom: 14, gap: 1 }}>
-        {segments.map(f => (
-          <div key={f.key} style={{ flex: f.v, background: FUEL[f.key], borderRadius: 1 }} />
-        ))}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-        {segments.map(f => (
-          <div key={f.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 6, height: 6, borderRadius: 1, background: FUEL[f.key], flexShrink: 0 }} />
-              <span style={{ fontFamily: MONO, fontSize: 11, color: C.text2 }}>{f.label}</span>
-            </div>
-            <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 700, color: FUEL[f.key] }}>
-              {(f.v * 100).toFixed(0)}%
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── DetailPanel ───────────────────────────────────────────────────────────────
-function StatusBadge({ status }: { status: string }) {
-  if (status === 'under_construction') return <Badge color={AMBER}>◑ Under Construction</Badge>;
-  if (status === 'planned') return <Badge color={LAVENDER}>○ Planned</Badge>;
-  return <Badge color={C.green}>● {status || 'operational'}</Badge>;
-}
-
-function DetailPanel({ dc, onClose, showElectrons, onToggleElectrons }: {
-  dc: DataCenter; onClose: () => void;
-  showElectrons: boolean; onToggleElectrons: () => void;
-}) {
-  const hasMix  = dc.power_mix && Object.values(dc.power_mix).some(v => typeof v === 'number' && (v as number) > 0.01);
-  const hasPPAs = dc.direct_ppas?.length > 0;
-  const accent  = dc.status === 'under_construction' ? AMBER
-                : dc.status === 'planned'            ? LAVENDER
-                : getMixColor(dc.power_mix);
-  const [copied, setCopied] = useState(false);
-  const share = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-    } catch {
-      const inp = document.createElement('input');
-      inp.value = window.location.href;
-      document.body.appendChild(inp);
-      inp.select();
-      document.execCommand('copy');
-      document.body.removeChild(inp);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2200);
-  };
-
-  return (
-    <div style={{
-      position: 'absolute', top: 96, right: 20, width: 316,
-      background: C.surface, border: `1px solid ${C.border}`,
-      borderTop: `2px solid ${accent}`, borderRadius: 8,
-      color: C.text, fontFamily: SANS,
-      boxShadow: `0 0 0 1px ${C.border}, 0 32px 64px rgba(0,0,0,0.7), 0 0 80px ${accent}12`,
-      animation: 'panelIn 0.16s ease',
-      overflow: 'hidden', zIndex: 10,
-    }}>
-      <style>{`@keyframes panelIn { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }`}</style>
-      <div style={{ padding: '18px 20px 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.35, color: C.text, letterSpacing: '-0.015em', marginBottom: 4 }}>
-              {dc.name || dc.operator || 'Unnamed Facility'}
-            </div>
-            {dc.operator && dc.name && dc.operator !== dc.name && (
-              <div style={{ fontFamily: MONO, fontSize: 10, color: C.text3, marginBottom: 2 }}>{dc.operator}</div>
-            )}
-            <div style={{ fontFamily: MONO, fontSize: 10, color: C.text3 }}>{dc.state}</div>
-          </div>
-          <button onClick={onClose} style={{
-            flexShrink: 0, width: 28, height: 28, background: C.surface3,
-            border: `1px solid ${C.border}`, color: C.text2, cursor: 'pointer',
-            borderRadius: 5, fontSize: 18, lineHeight: 1,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS,
-          }}>×</button>
-        </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <StatusBadge status={dc.status || 'operational'} />
-          {hasPPAs && <Badge color={FUEL.nuclear}>⚡ Direct PPA</Badge>}
-          {dc.capacity_mw && <Badge color={C.text2}>{dc.capacity_mw} MW</Badge>}
-        </div>
-      </div>
-      <Divider />
-      <div style={{ padding: '16px 20px' }}>
-        <SectionLabel>Power Mix</SectionLabel>
-        {hasMix
-          ? <FuelBar mix={dc.power_mix} />
-          : <div style={{ fontFamily: MONO, fontSize: 11, color: C.text3 }}>Mix data pending EIA territory join</div>
-        }
-      </div>
-      {hasPPAs && (
-        <>
-          <Divider />
-          <div style={{ padding: '16px 20px' }}>
-            <SectionLabel>Direct PPAs</SectionLabel>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {dc.direct_ppas.map((ppa: any, i: number) => (
-                <div key={i} style={{ padding: '10px 12px', background: C.surface2, borderRadius: 5, borderLeft: `2px solid ${FUEL.nuclear}` }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 4 }}>{ppa.source_name}</div>
-                  <div style={{ fontFamily: MONO, fontSize: 10, color: C.text3 }}>
-                    {[ppa.type?.toUpperCase(), ppa.mw && `${ppa.mw} MW`, ppa.year_signed].filter(Boolean).join(' · ')}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-      {dc.utility?.name && (
-        <>
-          <Divider />
-          <div style={{ padding: '14px 20px' }}>
-            <SectionLabel>Utility Provider</SectionLabel>
-            <div style={{ fontSize: 12, color: C.text2 }}>{dc.utility.name}</div>
-          </div>
-        </>
-      )}
-      {dc.notes && (
-        <>
-          <Divider />
-          <div style={{ padding: '14px 20px 18px' }}>
-            <SectionLabel>Why it matters</SectionLabel>
-            <div style={{ fontFamily: MONO, fontSize: 10, color: C.text2, lineHeight: 1.65 }}>
-              {dc.notes}
-            </div>
-          </div>
-        </>
-      )}
-      <Divider />
-      {/* Follow the electrons toggle */}
-      <div style={{ padding: '10px 20px 8px' }}>
-        <div
-          onClick={onToggleElectrons}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-            padding: '8px 12px', borderRadius: 6,
-            background: showElectrons ? `${accent}08` : C.surface2,
-            border: `1px solid ${showElectrons ? accent + '30' : C.border}`,
-            cursor: 'pointer', transition: 'background 0.18s, border-color 0.18s',
-            userSelect: 'none',
-          }}
-        >
-          <div>
-            <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: showElectrons ? C.text : C.text2, transition: 'color 0.15s' }}>
-              Follow the electrons
-            </div>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: C.text3, marginTop: 2, letterSpacing: '0.04em' }}>
-              Show lines to 3 nearest power plants
-            </div>
-          </div>
-          <div style={{
-            flexShrink: 0, width: 34, height: 18, borderRadius: 9,
-            background: showElectrons ? accent : C.surface3,
-            border: `1px solid ${showElectrons ? accent + '80' : C.border2}`,
-            position: 'relative', transition: 'background 0.18s, border-color 0.18s',
-          }}>
-            <div style={{
-              position: 'absolute', top: 2, left: showElectrons ? 16 : 2,
-              width: 12, height: 12, borderRadius: '50%',
-              background: showElectrons ? C.bg : C.text3,
-              transition: 'left 0.18s cubic-bezier(0.22,1,0.36,1), background 0.18s',
-            }} />
-          </div>
-        </div>
-      </div>
-      <Divider />
-      <div style={{ padding: '10px 20px 14px' }}>
-        <button
-          onClick={share}
-          style={{
-            width: '100%', padding: '8px 14px',
-            fontFamily: MONO, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            background: copied ? `${C.green}15` : 'transparent',
-            border: `1px solid ${copied ? C.green + '55' : C.border}`,
-            color: copied ? C.green : C.text3,
-            borderRadius: 5, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            transition: 'background 0.2s, border-color 0.2s, color 0.2s',
-          }}
-        >
-          {copied ? (
-            <><span>✓</span> Copied to clipboard</>
-          ) : (
-            <><span style={{ fontSize: 13 }}>↗</span> Share this facility</>
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── TourCallout ───────────────────────────────────────────────────────────────
 function TourCallout({ stop, stopIndex, total, onSkip, onNext }: {
   stop: TourStop; stopIndex: number; total: number; onSkip: () => void; onNext: () => void;
 }) {
   const isLast = stopIndex + 1 >= total;
   return (
-    <div style={{ position: 'absolute', bottom: 44, left: '50%', zIndex: 30, width: 520 }}>
+    <div style={{ position: 'absolute', bottom: 44, left: '50%', zIndex: 30, width: 'min(520px, calc(100vw - 24px))' }}>
       <style>{`
         @keyframes tourSlideUp   { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
         @keyframes tourCountdown { from { width:0%; } to { width:100%; } }
@@ -767,18 +311,16 @@ function TourCallout({ stop, stopIndex, total, onSkip, onNext }: {
 
 // ── LayerPanel ────────────────────────────────────────────────────────────────
 function LayerPanel({ open, showDataCenters, onToggleDC, showPlants, onTogglePlants,
-  showPlanned, onTogglePlanned, showNerc, onToggleNerc, showWater, onToggleWater,
-  activeFuels, onToggleFuel, ppasOnly, onTogglePpasOnly, topOffset }: {
+  showPlanned, onTogglePlanned,
+  activeFuels, onToggleFuel, topOffset, onClose }: {
   open: boolean;
   showDataCenters: boolean; onToggleDC: () => void;
   showPlants: boolean;      onTogglePlants: () => void;
   showPlanned: boolean;     onTogglePlanned: () => void;
-  showNerc: boolean;        onToggleNerc: () => void;
-  showWater: boolean;       onToggleWater: () => void;
   activeFuels: Set<string>; onToggleFuel: (f: FuelKey) => void;
-  ppasOnly: boolean;        onTogglePpasOnly: () => void;
-  topOffset: number;
+  topOffset: number; onClose:()=>void;
 }) {
+  if(!open)return null;
   const FUEL_ROWS: { key: FuelKey; label: string }[] = [
     { key: 'coal',        label: 'Coal'        },
     { key: 'natural_gas', label: 'Natural Gas' },
@@ -792,13 +334,13 @@ function LayerPanel({ open, showDataCenters, onToggleDC, showPlants, onTogglePla
   const someFuelsOn = ALL_FUELS.some(f => activeFuels.has(f));
 
   return (
-    <div style={{
+    <aside className="layer-panel" aria-label="Map layer controls" onKeyDown={e=>{if(e.key==='Escape')onClose()}} style={{
       position: 'absolute', top: topOffset, right: 0,
       width: 272,
       height: `calc(100% - ${topOffset}px)`,
       background: C.surface,
       borderLeft: `1px solid ${C.border}`,
-      zIndex: 12,
+      zIndex: 45,
       transform: open ? 'translateX(0)' : 'translateX(272px)',
       transition: 'transform 0.28s cubic-bezier(0.22,1,0.36,1), top 0.22s cubic-bezier(0.22,1,0.36,1), height 0.22s cubic-bezier(0.22,1,0.36,1)',
       overflowY: 'auto',
@@ -812,10 +354,10 @@ function LayerPanel({ open, showDataCenters, onToggleDC, showPlants, onTogglePla
         flexShrink: 0,
       }}>
         <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.text3 }}>
-          Map Layers
-        </div>
+          Display layers
+        </div><button className="close-layer-mobile" onClick={onClose} aria-label="Close map layers" style={{background:C.surface2,color:C.text,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 12px",cursor:"pointer"}}>×</button>
         <div style={{ fontFamily: MONO, fontSize: 9, color: C.text3 }}>
-          {[showDataCenters && 'DC', showPlants && someFuelsOn && 'Plants'].filter(Boolean).join(' · ') || 'None visible'}
+          {[showDataCenters && 'DC', showPlants && someFuelsOn && 'Plants'].filter(Boolean).join(' · ') || 'Inventory layers off'}
         </div>
       </div>
 
@@ -824,26 +366,16 @@ function LayerPanel({ open, showDataCenters, onToggleDC, showPlants, onTogglePla
         <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.text3, marginBottom: 6 }}>
           Layers
         </div>
+
         <Toggle label="Data Centers" on={showDataCenters} onChange={onToggleDC} />
         <Toggle label="Power Plants" on={showPlants} onChange={onTogglePlants} />
         <Toggle
-          label="Emerging Campuses"
-          sublabel="Planned & under-construction facilities (2023–2026)"
+          label="Future projects · unverified"
+          sublabel="Inherited planned / construction labels; not a complete pipeline"
           on={showPlanned}
           onChange={onTogglePlanned}
         />
-        <Toggle
-          label="NERC Grid Zones"
-          sublabel="Reliability regions with 2024 LTRA stress assessment"
-          on={showNerc}
-          onChange={onToggleNerc}
-        />
-        <Toggle
-          label="Water Stress"
-          sublabel="WRI Aqueduct county-level baseline water stress"
-          on={showWater}
-          onChange={onToggleWater}
-        />
+
       </div>
 
       {/* Section: Fuel type filter */}
@@ -851,7 +383,7 @@ function LayerPanel({ open, showDataCenters, onToggleDC, showPlants, onTogglePla
         padding: '14px 20px 12px',
         borderBottom: `1px solid ${C.border}`,
         flexShrink: 0,
-        opacity: showPlants ? 1 : 0.45,
+        display: showPlants ? 'block' : 'none',
         transition: 'opacity 0.2s',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -887,152 +419,8 @@ function LayerPanel({ open, showDataCenters, onToggleDC, showPlants, onTogglePla
         ))}
       </div>
 
-      {/* Section: Data center filters */}
-      <div style={{ padding: '14px 20px 12px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-        <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.text3, marginBottom: 6 }}>
-          Filters
-        </div>
-        <Toggle
-          label="PPAs Only"
-          sublabel="Show only facilities with direct power purchase agreements"
-          on={ppasOnly}
-          onChange={onTogglePpasOnly}
-          disabled={!showDataCenters}
-        />
-      </div>
 
-      {/* NERC stress legend (only when layer is on) */}
-      {showNerc && (
-        <div style={{ padding: '14px 20px 12px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-          <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.text3, marginBottom: 8 }}>
-            Grid Stress · NERC 2024 LTRA
-          </div>
-          {([
-            ['high',     '#ef4444', '▲ High Risk'],
-            ['elevated', '#f97316', '◆ Elevated'],
-            ['moderate', '#eab308', '● Moderate'],
-            ['low',      '#4ade80', '○ Low Risk'],
-          ] as [string, string, string][]).map(([, color, label]) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 5 }}>
-              <div style={{ width: 8, height: 8, borderRadius: 1, background: color, flexShrink: 0, opacity: 0.85 }} />
-              <span style={{ fontFamily: MONO, fontSize: 10, color: C.text2 }}>{label}</span>
-            </div>
-          ))}
-          <div style={{ fontFamily: MONO, fontSize: 9, color: C.text3, marginTop: 8, lineHeight: 1.5 }}>
-            Source: NERC Long-Term Reliability Assessment 2024
-          </div>
-        </div>
-      )}
-
-      {/* Water stress legend (only when layer is on) */}
-      {showWater && (
-        <div style={{ padding: '14px 20px 12px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-          <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.text3, marginBottom: 8 }}>
-            Water Stress · WRI Aqueduct
-          </div>
-          {([
-            ['#fde68a', 'Low'],
-            ['#f97316', 'Medium-High'],
-            ['#ef4444', 'High'],
-            ['#dc2626', 'Very High'],
-            ['#7f1d1d', 'Extremely High'],
-          ] as [string, string][]).map(([color, label]) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 5 }}>
-              <div style={{ width: 14, height: 8, borderRadius: 1, background: color, flexShrink: 0, opacity: 0.85 }} />
-              <span style={{ fontFamily: MONO, fontSize: 10, color: C.text2 }}>{label}</span>
-            </div>
-          ))}
-          <div style={{ fontFamily: MONO, fontSize: 9, color: C.text3, marginTop: 8, lineHeight: 1.5 }}>
-            Counties with high stress overlap
-            dense DC clusters in Phoenix,
-            Las Vegas &amp; west Texas.
-          </div>
-          <div style={{ fontFamily: MONO, fontSize: 8, color: C.text3, marginTop: 6, opacity: 0.6 }}>
-            Source: WRI Aqueduct 3.0
-          </div>
-        </div>
-      )}
-
-      {/* Stats footer */}
-      <div style={{ padding: '12px 20px', marginTop: 'auto', flexShrink: 0 }}>
-        <div style={{ fontFamily: MONO, fontSize: 9, color: C.text3, lineHeight: 1.7 }}>
-          <div><span style={{ color: C.text2 }}>407</span> facilities with direct PPAs</div>
-          <div><span style={{ color: C.text2 }}>14,793</span> power plants indexed</div>
-          <div style={{ marginTop: 4 }}>
-            <span style={{ color: AMBER }}>14</span>{' '}
-            <span style={{ color: C.text3 }}>under construction · </span>
-            <span style={{ color: LAVENDER }}>6</span>{' '}
-            <span style={{ color: C.text3 }}>planned</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Legend ────────────────────────────────────────────────────────────────────
-function Legend({ showPlants, showPlanned }: { showPlants: boolean; showPlanned: boolean }) {
-  return (
-    <div style={{
-      position: 'absolute', bottom: 40, left: 20,
-      background: C.surface, border: `1px solid ${C.border}`,
-      borderRadius: 8, padding: '16px 18px', zIndex: 10, minWidth: 206, fontFamily: SANS,
-    }}>
-      <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.text3, marginBottom: 12 }}>
-        Data Centers
-      </div>
-      {([
-        [C.green,  'Clean (nuclear · solar · wind · hydro)'],
-        [C.orange, 'Natural gas'],
-        [C.red,    'Coal'],
-        [C.text3,  'Unknown / mixed'],
-      ] as [string, string][]).map(([color, label]) => (
-        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0, boxShadow: `0 0 6px ${color}` }} />
-          <span style={{ fontFamily: MONO, fontSize: 10, color: C.text2 }}>{label}</span>
-        </div>
-      ))}
-      {showPlanned && (
-        <>
-          <div style={{ height: 1, background: C.border, margin: '10px 0 10px' }} />
-          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.text3, marginBottom: 10 }}>
-            Emerging
-          </div>
-          {([
-            [AMBER,   '○', 'Under construction'],
-            [LAVENDER,'○', 'Planned (announced)'],
-          ] as [string, string, string][]).map(([color, sym, label]) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 7 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', border: `2px solid ${color}`, flexShrink: 0 }} />
-              <span style={{ fontFamily: MONO, fontSize: 10, color: C.text2 }}>{label}</span>
-            </div>
-          ))}
-        </>
-      )}
-      {showPlants && (
-        <>
-          <div style={{ height: 1, background: C.border, margin: '12px 0' }} />
-          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.text3, marginBottom: 12 }}>
-            Power Plants
-          </div>
-          {([
-            [FUEL.coal,        'Coal'],
-            [FUEL.natural_gas, 'Natural gas'],
-            [FUEL.nuclear,     'Nuclear'],
-            [FUEL.solar,       'Solar'],
-            [FUEL.wind,        'Wind'],
-            [FUEL.hydro,       'Hydro'],
-          ] as [string, string][]).map(([color, label]) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 7 }}>
-              <div style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0, boxShadow: `0 0 5px ${color}80` }} />
-              <span style={{ fontFamily: MONO, fontSize: 10, color: C.text2 }}>{label}</span>
-            </div>
-          ))}
-        </>
-      )}
-      <div style={{ height: 1, background: C.border, margin: '12px 0 10px' }} />
-      <div style={{ fontFamily: MONO, fontSize: 9, color: C.text3, letterSpacing: '0.06em' }}>PNNL IM3 ATLAS v2026.02</div>
-    </div>
+    </aside>
   );
 }
 
@@ -1228,9 +616,9 @@ function SearchOverlay({ dcs, plants, onSelectDc, onSelectPlant, onClose }: {
 
 // ── SplashScreen ──────────────────────────────────────────────────────────────
 const SPLASH_STATS = [
-  { num: '1,499',  desc: 'data centers mapped across the United States', accent: C.green  },
-  { num: '324',    desc: 'in Northern Virginia alone — the densest cluster on Earth', accent: C.orange },
-  { num: '+40%',   desc: 'AI data center power demand growth in 2024. The grid wasn\'t ready.', accent: C.red },
+  { num: '1,499',  desc: 'retained inventory locations; not a national census', accent: C.green  },
+  { num: '26', desc: 'US reporting locations with 2025 water disclosures', accent: '#9A6B1E' },
+  { num: '3', desc: 'reporting locations with documented water-source references', accent: C.green },
 ] as const;
 
 function SplashScreen({ fading, onDismiss }: { fading: boolean; onDismiss: () => void }) {
@@ -1273,7 +661,7 @@ function SplashScreen({ fading, onDismiss }: { fading: boolean; onDismiss: () =>
             fontFamily: SANS, fontSize: 54, fontWeight: 900,
             letterSpacing: '-0.04em', lineHeight: 1.0, color: C.text2,
           }}>
-            Power Map
+            Resource Map
           </div>
         </div>
 
@@ -1282,7 +670,7 @@ function SplashScreen({ fading, onDismiss }: { fading: boolean; onDismiss: () =>
           fontFamily: MONO, fontSize: 13, color: C.orange,
           letterSpacing: '-0.005em', lineHeight: 1.5, marginBottom: 36,
         }}>
-          AI infrastructure is an energy policy problem
+          Locations · water disclosures · evidence
         </div>
 
         {/* Divider */}
@@ -1335,7 +723,7 @@ function SplashScreen({ fading, onDismiss }: { fading: boolean; onDismiss: () =>
           fontFamily: MONO, fontSize: 9, color: C.text3,
           textAlign: 'center', marginTop: 16, letterSpacing: '0.06em',
         }}>
-          Data: PNNL IM3 ATLAS v2026.02 · EIA Form 860/923 · 2023 release
+          Research preview · incomplete coverage · source dates vary
         </div>
       </div>
     </div>
@@ -1347,17 +735,17 @@ type AboutSource = { name: string; version: string; count: string; desc: string;
 const ABOUT_SOURCES: AboutSource[] = [
   {
     name: 'PNNL IM3 Atlas',
-    version: 'v2026.02',
-    count: '1,499 facilities',
-    desc: 'US data center locations with operator, state, utility territory, and estimated power mix. Published by the Pacific Northwest National Laboratory Integrated Multisector Multiscale Modeling initiative.',
-    url: null,
-    urlLabel: null,
+    version: 'Checked Oct 16, 2026',
+    count: '1,499 retained records; 1,382 upstream locations checked',
+    desc: 'Retained inventory derived from the PNNL atlas, with local enrichment. The October check compared geographic coverage only; operator, status, utility, and contract fields are not independently verified.',
+    url: 'https://im3.pnnl.gov/datacenter-atlas',
+    urlLabel: 'PNNL IM3 source atlas',
   },
   {
     name: 'EIA Form 860',
     version: '2023 release',
-    count: '14,793 power plants',
-    desc: 'Annual generator inventory: capacity, fuel type, and ownership for all US utility-scale generating units. The authoritative federal source for power plant data.',
+    count: '11,159 displayed plant records',
+    desc: 'Local plant records labeled as EIA-derived 2023 data. Six fuel categories are displayed (11,159 of 14,793 records). Original EIA plant identifiers and row-level source lineage are absent, so unique plant identity and current operating status are unverified.',
     url: 'https://www.eia.gov/electricity/data/eia860/',
     urlLabel: 'eia.gov · electricity/data/eia860',
   },
@@ -1365,30 +753,32 @@ const ABOUT_SOURCES: AboutSource[] = [
     name: 'EIA Form 923',
     version: '2023 release',
     count: 'Generation & fuel data',
-    desc: 'Monthly and annual generation, fuel receipts, and heat rates for US power plants. Used to cross-validate capacity-based power mix estimates.',
+    desc: 'Reference only. No reproducible Form 923 cross-validation is present in this repository; generation or measured campus emissions are not displayed.',
     url: 'https://www.eia.gov/electricity/data/eia923/',
     urlLabel: 'eia.gov · electricity/data/eia923',
   },
   {
     name: 'Hand-curated Emerging Campuses',
     version: '2023–2026',
-    count: '20 facilities',
-    desc: 'Major announced or under-construction AI data center campuses sourced from public press releases, local planning filings, corporate disclosures, and news reporting.',
+    count: '20 unverified inventory entries',
+    desc: 'Inherited planned and construction records without per-record citations in this repository. Hidden by default; these entries need source and status verification.',
     url: null,
     urlLabel: null,
   },
 ];
 
 const ABOUT_LIMITATIONS = [
-  'Power mix is capacity-based, not generation-based — nameplate MW fractions overstate intermittent sources (solar, wind) relative to their actual contribution to delivered electricity.',
-  'Utility territory join uses a state-level average as fallback for ~23% of facilities where utility mapping is unavailable or ambiguous.',
-  'Facility coordinates are sourced from OpenStreetMap and public records; positional accuracy varies — approximately 8% of facilities may have errors exceeding 500 m.',
-  '"Follow the electrons" shows the 3 geographically nearest power plants as a visual heuristic only — not actual grid topology.',
-  'Emerging campus data reflects public announcements as of early 2026. Projects may be delayed, scaled down, or cancelled.',
-  'Power plant dataset excludes facilities under 1 MW nameplate capacity and those with undetermined fuel classification.',
+  'Water use covers 26 Google reporting locations, with 16 representative map locations. Daily values are annual averages, not live meters. Risk overlays have been withheld because their former geometry and scores were illustrative.',
+  'Campus electricity mix, PPA claims, demand heuristics, and modeled emissions have been withheld pending reproducible evidence.',
+  'Utility mapping and power mix may be missing or use state-level fallbacks; coverage is not independently validated.',
+  'Facility positions and statuses vary in accuracy. A dataset coverage check does not verify each record’s identity, current operation, or nationwide completeness.',
+  '"Nearby plant records" shows the 3 plants selected by an approximate latitude/longitude distance as a visual heuristic only — not actual grid topology.',
+  'Emerging campuses are unverified inherited announcements and are hidden by default. Projects may be delayed, changed, or cancelled.',
+  'Only six plant fuel categories are displayed; excluded records and absent plant identifiers limit completeness and deduplication.',
 ] as const;
 
 function AboutPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if(!open)return null;
   return (
     <div style={{
       position: 'absolute', top: 56, right: 0,
@@ -1455,10 +845,9 @@ function AboutPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
           Methodology
         </div>
         {([
-          ['Power mix',    'Assigned per facility from power plants sharing the same utility territory. Where utility mapping is unavailable, a state-average capacity mix is used as fallback. Fractions are capacity-weighted, not generation-weighted.'],
-          ['CO₂ estimates','Calculated as: capacity (MW) × fuel-specific capacity factor × 8,760 h × kg CO₂/MWh. Emission factors: coal 1,001 · gas 469 · nuclear 12 · solar 46 · wind 11 · hydro 24 kg/MWh.'],
-          ['MW demand',    'Estimated at 50 MW average per data center. Actual values range from <1 MW (edge nodes) to >1,000 MW (hyperscale AI campuses). This is a planning-level approximation only.'],
-          ['Nearest plants','"Follow the electrons" uses Euclidean distance in lat/lon space to find the 3 closest plants — a visual heuristic, not grid topology.'],
+          ['Evidence', 'Reported disclosures, inherited inventory fields, and geographic context are distinct. Missing values are not zero. See the public evidence register for lineage and coverage.'],
+          ['Demand and emissions', 'Campus demand totals and modeled plant emissions were removed. No measured campus electricity or emissions series is available in this dataset.'],
+          ['Nearby plants', 'Lines indicate geographic proximity only. They do not identify a campus electricity supplier or physical grid connection.'],
         ] as [string, string][]).map(([title, body]) => (
           <div key={title} style={{ marginBottom: 12 }}>
             <div style={{ fontFamily: MONO, fontSize: 10, fontWeight: 600, color: C.text2, marginBottom: 3 }}>{title}</div>
@@ -1488,10 +877,10 @@ function AboutPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
           Update Cadence
         </div>
         {([
-          ['Base dataset',     'Annual — aligned with EIA Form 860 release (~Q2)'],
-          ['Power plants',     'Annual — EIA Form 860/923 update cycle'],
-          ['Emerging DCs',     'Ad hoc — updated as major announcements are confirmed'],
-          ['NERC assessments', 'Annual — Long-Term Reliability Assessment (November)'],
+          ['Base dataset', 'Manual review; no scheduled refresh'],
+          ['Power plants', '2023 snapshot; newer releases not imported'],
+          ['Emerging DCs', 'Unverified legacy records; hidden by default'],
+          ['Risk overlays', 'Withheld pending verified data'],
         ] as [string, string][]).map(([label, value]) => (
           <div key={label} style={{ display: 'flex', gap: 8, marginBottom: 7, alignItems: 'flex-start' }}>
             <span style={{ fontFamily: MONO, fontSize: 9, color: C.text2, flexShrink: 0, width: 108 }}>{label}</span>
@@ -1528,18 +917,9 @@ function AboutPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 // ── StatsStrip ────────────────────────────────────────────────────────────────
 function StatsStrip({ stats, expanded }: { stats: MapStats; expanded: boolean }) {
-  const fmt = (n: number) => {
-    if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
-    if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
-    if (n >= 1e3) return `${(n / 1e3).toFixed(0)}K`;
-    return n.toFixed(0);
-  };
   const items: [string, string, string][] = [
-    ['EST. DEMAND', `${fmt(stats.mwDemand)} MW`, C.orange],
-    ['PLANT CO₂/YR', `${fmt(stats.co2Tons)} t`, C.red],
-    ['POWER PLANTS', stats.plantCount.toLocaleString(), C.text2],
-    ['WITH PPA', stats.withPPA.toString(), C.green],
-    ['NO PPA', stats.withoutPPA.toString(), C.text3],
+    ['INVENTORY LOCATIONS IN VIEW',stats.totalDCs.toLocaleString(),C.text2],
+    ['PLANT RECORDS IN VIEW',stats.plantCount.toLocaleString(),C.text2],
   ];
   return (
     <div style={{
@@ -1561,7 +941,7 @@ function StatsStrip({ stats, expanded }: { stats: MapStats; expanded: boolean })
         </div>
       ))}
       <div style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 8, color: C.text3, letterSpacing: '0.08em', opacity: 0.5, flexShrink: 0 }}>
-        visible · 50 MW avg/DC
+        Geographic counts · not demand
       </div>
     </div>
   );
@@ -1570,7 +950,7 @@ function StatsStrip({ stats, expanded }: { stats: MapStats; expanded: boolean })
 // ── Main component ────────────────────────────────────────────────────────────
 export default function DataCenterMap() {
   const mapContainer     = useRef<HTMLDivElement>(null);
-  const map              = useRef<mapboxgl.Map | null>(null);
+  const map              = useRef<MapboxMap | null>(null);
   const tourActive       = useRef(false);
   const tourTimers       = useRef<ReturnType<typeof setTimeout>[]>([]);
   const dcAllFeatures    = useRef<GeoJSON.Feature[]>([]);
@@ -1580,6 +960,10 @@ export default function DataCenterMap() {
   const allPlantsData    = useRef<any[]>([]);
   const electronAnimRef  = useRef<number | null>(null);
 
+  const initialView=useRef(parseView(window.location.search)).current;
+  const [mode,setMode]=useState(initialView.mode);
+  const [facilityTab,setFacilityTab]=useState<FacilityTab>(initialView.tab as FacilityTab);
+  const [viewReady,setViewReady]=useState(false);
   const [selected,      setSelected]      = useState<DataCenter | null>(null);
   const [total,         setTotal]         = useState(0);
   const [loaded,        setLoaded]        = useState(false);
@@ -1589,22 +973,28 @@ export default function DataCenterMap() {
   // Layer panel state
   const [layerPanelOpen,  setLayerPanelOpen]  = useState(false);
   const [aboutOpen,       setAboutOpen]       = useState(false);
-  const [showDataCenters, setShowDataCenters] = useState(true);
-  const [showPlants,      setShowPlants]      = useState(true);
-  const [activeFuels,     setActiveFuels]     = useState<Set<FuelKey>>(new Set(ALL_FUELS));
-  const [ppasOnly,        setPpasOnly]        = useState(false);
-  const [showPlanned,     setShowPlanned]     = useState(true);
-  const [showNerc,        setShowNerc]        = useState(true);
-  const [showWater,       setShowWater]       = useState(false);
+  const [showDataCenters, setShowDataCenters] = useState(initialView.centers);
+  const [showPlants,      setShowPlants]      = useState(initialView.plants);
+  const [activeFuels,     setActiveFuels]     = useState<Set<FuelKey>>(new Set(initialView.fuels as FuelKey[]));
+  const [showPlanned,     setShowPlanned]     = useState(initialView.planned);
+  const [waterOpen, setWaterOpen] = useState(false);
+  const [gridLayer,setGridLayer]=useState(initialView.grid||'none');
+  const [gridOpen,setGridOpen]=useState(initialView.mode==='grid'&&!initialView.facility);
+  const [gridStatus,setGridStatus]=useState('');
+  const [comparison,setComparison]=useState<DataCenter[]>([]);
+  const [compareOpen,setCompareOpen]=useState(false);
+  const [registerOpen,setRegisterOpen]=useState(false);
+  const [waterMode,setWaterMode] = useState(initialView.mode==='water');
+  const [watershedLevel,setWatershedLevel] = useState(initialView.watershed);
+  const [watershedsReady,setWatershedsReady] = useState(false);
   const [searchOpen,      setSearchOpen]      = useState(false);
-  const [showElectrons,   setShowElectrons]   = useState(true);
+  const [loadError,setLoadError] = useState(false);
+  const [showElectrons,   setShowElectrons]   = useState(false);
   // Stats strip
   const [stats,           setStats]           = useState<MapStats | null>(null);
-  const [statsExpanded,   setStatsExpanded]   = useState(true);
+  const [statsExpanded,   setStatsExpanded]   = useState(false);
   // Splash state
-  const [splashVisible,   setSplashVisible]   = useState(() => {
-    try { return localStorage.getItem('dc-map-splash-dismissed') !== '1'; } catch { return true; }
-  });
+  const [splashVisible,setSplashVisible]=useState(false);
   const [splashFading,    setSplashFading]    = useState(false);
 
   // ── Map layer sync effects ─────────────────────────────────────────────────
@@ -1633,15 +1023,7 @@ export default function DataCenterMap() {
     });
   }, [loaded, activeFuels]);
 
-  useEffect(() => {
-    if (!loaded || !map.current) return;
-    const src = map.current.getSource('datacenters') as mapboxgl.GeoJSONSource | undefined;
-    if (!src) return;
-    src.setData({
-      type: 'FeatureCollection',
-      features: ppasOnly ? dcPpaFeatures.current : dcAllFeatures.current,
-    });
-  }, [loaded, ppasOnly]);
+
 
   useEffect(() => {
     if (!loaded || !map.current) return;
@@ -1651,34 +1033,72 @@ export default function DataCenterMap() {
     });
   }, [loaded, showPlanned]);
 
-  useEffect(() => {
-    if (!loaded || !map.current) return;
-    const vis = showNerc ? 'visible' : 'none';
-    ['nerc-fill', 'nerc-border', 'nerc-label'].forEach(l => {
-      if (map.current?.getLayer(l)) map.current!.setLayoutProperty(l, 'visibility', vis);
-    });
-  }, [loaded, showNerc]);
+
+
+
 
   useEffect(() => {
     if (!loaded || !map.current) return;
-    const vis = showWater ? 'visible' : 'none';
-    ['water-fill', 'water-border'].forEach(l => {
-      if (map.current?.getLayer(l)) map.current!.setLayoutProperty(l, 'visibility', vis);
-    });
-  }, [loaded, showWater]);
-
-  // ── URL deep-link sync ─────────────────────────────────────────────────────
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (selected) {
-      url.searchParams.set('facility', selected.id);
-    } else {
-      url.searchParams.delete('facility');
+    const m=map.current;
+    for(const id of ['water-reports','water-report-labels'])if(m.getLayer(id)){m.setLayoutProperty(id,'visibility',waterMode?'visible':'none');m.moveLayer(id);}
+    for(const id of ['watersheds-fill','watersheds-line']) if(m.getLayer(id)) {
+      m.setLayoutProperty(id,'visibility',waterMode && watershedLevel?'visible':'none');
+      m.setFilter(id,['==',['get','level'],watershedLevel]);
     }
-    window.history.replaceState(null, '', url.searchParams.toString()
-      ? `${url.pathname}?${url.searchParams}`
-      : url.pathname);
-  }, [selected]);
+  },[loaded,waterMode,watershedLevel,watershedsReady]);
+
+  useEffect(()=>{
+    if(!loaded||!waterMode||watershedsReady||!map.current?.getLayer('water-reports'))return;
+    const controller=new AbortController();
+      fetch('/watersheds.json',{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('Watershed data unavailable');return r.json()}).then(boundaries=>{
+        if(!map.current||controller.signal.aborted)return;
+        const seenWatersheds=new Set<string>();
+        boundaries.features=boundaries.features.filter((feature:any)=>{const key=String(feature.properties.huc);if(seenWatersheds.has(key))return false;seenWatersheds.add(key);return true;});
+        map.current.addSource('watersheds',{type:'geojson',data:boundaries,attribution:'USGS Watershed Boundary Dataset'});
+        map.current.addLayer({id:'watersheds-fill',type:'fill',source:'watersheds',layout:{visibility:'none'},filter:['==',['get','level'],8],paint:{'fill-color':'#245D62','fill-opacity':0.035}},'water-reports');
+        map.current.addLayer({id:'watersheds-line',type:'line',source:'watersheds',layout:{visibility:'none'},filter:['==',['get','level'],8],paint:{'line-color':'#476c63','line-width':1.1,'line-dasharray':[4,3]}},'water-reports');
+        setWatershedsReady(true);
+      }).catch(error=>{if(error.name!=='AbortError')console.warn('Watershed context could not load')});
+    return()=>controller.abort();
+  },[loaded,waterMode,watershedsReady]);
+
+  useEffect(()=>{
+    if(!loaded||!map.current)return;
+    const m=map.current;
+    const data:GeoJSON.FeatureCollection={type:'FeatureCollection',features:selected?[{type:'Feature',geometry:{type:'Point',coordinates:[selected.lon,selected.lat]},properties:{}}]:[]};
+    if(!m.getSource('selected-campus')){
+      m.addSource('selected-campus',{type:'geojson',data});
+      m.addLayer({id:'selected-halo',type:'circle',source:'selected-campus',paint:{'circle-radius':13,'circle-color':'#FAFAF7','circle-opacity':0.85,'circle-stroke-width':1.5,'circle-stroke-color':'#303A39'}});
+      m.addLayer({id:'selected-point',type:'circle',source:'selected-campus',paint:{'circle-radius':4,'circle-color':'#303A39'}});
+    }else(m.getSource('selected-campus') as GeoJSONSource).setData(data);
+    m.moveLayer('selected-halo');m.moveLayer('selected-point');
+  },[loaded,selected,waterMode,watershedsReady]);
+
+  useEffect(()=>{
+    if(!loaded||!map.current)return;
+    const m=map.current;let active=true;
+    if(gridLayer==='none'){for(const id of ['grid-boundary-fill','grid-boundary-line'])if(m.getLayer(id))m.setLayoutProperty(id,'visibility','none');setGridStatus('');return;}
+    for(const id of ['grid-boundary-fill','grid-boundary-line'])if(m.getLayer(id))m.setLayoutProperty(id,'visibility','none');
+    setGridStatus('Loading historical grid boundaries…');
+    loadGrid(gridLayer).then(data=>{if(!active||!map.current)return;
+      if(m.getSource('grid-context'))(m.getSource('grid-context') as GeoJSONSource).setData(data);
+      else{m.addSource('grid-context',{type:'geojson',data});m.addLayer({id:'grid-boundary-fill',type:'fill',source:'grid-context',paint:{'fill-color':'#776689','fill-opacity':0.055}},'clusters');m.addLayer({id:'grid-boundary-line',type:'line',source:'grid-context',paint:{'line-color':'#776689','line-width':1.5}},'clusters');}
+      for(const id of ['grid-boundary-fill','grid-boundary-line'])m.setLayoutProperty(id,'visibility','visible');setGridStatus('');
+    }).catch(()=>{if(active)setGridStatus('Grid boundaries unavailable. Choose Off, then retry. Other layers remain available.')});
+    return()=>{active=false};
+  },[loaded,gridLayer]);
+
+  const syncView=()=>{if(!map.current||!viewReady)return;const center=map.current.getCenter();const query=serializeView({mode,grid:gridLayer,tab:facilityTab,facility:selected?.id||null,lon:center.lng,lat:center.lat,zoom:map.current.getZoom(),watershed:watershedLevel,plants:showPlants,centers:showDataCenters,planned:showPlanned,fuels:[...activeFuels]});window.history.replaceState(null,'',`${window.location.pathname}?${query}`);};
+  useEffect(()=>{syncView();},[viewReady,mode,gridLayer,facilityTab,selected,watershedLevel,showPlants,showDataCenters,showPlanned,activeFuels]);
+  useEffect(()=>{if(!map.current||!viewReady)return;map.current.on('moveend',syncView);return()=>{map.current?.off('moveend',syncView)}},[viewReady,mode,gridLayer,facilityTab,selected,watershedLevel,showPlants,showDataCenters,showPlanned,activeFuels]);
+  const switchMode=(next:string)=>{setRegisterOpen(false);setCompareOpen(false);setMode(next);setGridOpen(next==='grid'&&!selected);if(next==='grid'&&selected)setFacilityTab('grid');setWaterMode(next==='water');setWaterOpen(false);setShowDataCenters(next!=='water');setShowPlants(next==='energy');setShowElectrons(false);setLayerPanelOpen(false);setAboutOpen(false);setStatsExpanded(false);if(next==='water'&&selected)setFacilityTab('water');};
+
+  useEffect(()=>{
+    const onResize=()=>{const m=map.current;if(!m)return;m.resize();if(selected)m.jumpTo({center:[selected.lon,selected.lat],padding:window.innerWidth>800?{top:90,bottom:90,left:40,right:370}:{top:110,bottom:360,left:20,right:20}});else m.setPadding({top:0,bottom:0,left:0,right:0});};
+    window.addEventListener('resize',onResize);return()=>window.removeEventListener('resize',onResize);
+  },[selected]);
+
+  useEffect(()=>{if(selected){setRegisterOpen(false);setGridOpen(false);setWaterOpen(false);setCompareOpen(false)}},[selected]);
 
   // ── Electron lines ─────────────────────────────────────────────────────────
   const clearElectronLines = () => {
@@ -1688,8 +1108,8 @@ export default function DataCenterMap() {
     }
     if (!map.current) return;
     const empty: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] };
-    (map.current.getSource('electron-lines')  as mapboxgl.GeoJSONSource | undefined)?.setData(empty);
-    (map.current.getSource('electron-labels') as mapboxgl.GeoJSONSource | undefined)?.setData(empty);
+    (map.current.getSource('electron-lines')  as GeoJSONSource | undefined)?.setData(empty);
+    (map.current.getSource('electron-labels') as GeoJSONSource | undefined)?.setData(empty);
   };
 
   const drawElectronLines = (dc: DataCenter) => {
@@ -1717,7 +1137,7 @@ export default function DataCenterMap() {
         },
         properties: { fuel_color: FUEL[p.fuel_type as FuelKey] || FUEL.other },
       }));
-      (map.current.getSource('electron-lines') as mapboxgl.GeoJSONSource).setData({
+      (map.current.getSource('electron-lines') as GeoJSONSource).setData({
         type: 'FeatureCollection', features: lineFeats,
       });
 
@@ -1732,7 +1152,7 @@ export default function DataCenterMap() {
             fuel_color: FUEL[p.fuel_type as FuelKey] || FUEL.other,
           },
         }));
-        (map.current.getSource('electron-labels') as mapboxgl.GeoJSONSource).setData({
+        (map.current.getSource('electron-labels') as GeoJSONSource).setData({
           type: 'FeatureCollection', features: labelFeats,
         });
       }
@@ -1763,24 +1183,17 @@ export default function DataCenterMap() {
     setTourStopIndex(null);
   };
 
-  const flyToStop = (index: number) => {
-    if (!tourActive.current || !map.current) return;
-    setTourStopIndex(null);
-    map.current.flyTo({ center: TOUR_STOPS[index].center, zoom: TOUR_STOPS[index].zoom, duration: 2800, essential: true });
-    const t1 = setTimeout(() => { if (!tourActive.current) return; setTourStopIndex(index); }, 3000);
-    const t2 = setTimeout(() => {
-      if (!tourActive.current) return;
-      const next = index + 1;
-      if (next < TOUR_STOPS.length) flyToStop(next); else endTour();
-    }, 7000);
-    tourTimers.current.push(t1, t2);
+  const flyToStop = (index:number)=>{
+    if(!tourActive.current||!map.current)return;
+    setTourStopIndex(index);
+    map.current.flyTo({center:TOUR_STOPS[index].center,zoom:TOUR_STOPS[index].zoom,duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:1000,essential:false});
   };
 
   const startTour = () => {
     if (!map.current || !loaded) return;
     clearTourTimers();
     tourActive.current = true;
-    setTourRunning(true);
+    setTourRunning(true);setWaterOpen(false);setAboutOpen(false);setSearchOpen(false);
     setSelected(null);
     setLayerPanelOpen(false);
     flyToStop(0);
@@ -1799,11 +1212,6 @@ export default function DataCenterMap() {
     setTimeout(() => { setSplashVisible(false); setSplashFading(false); }, 520);
   };
 
-  const reopenSplash = () => {
-    setSplashFading(false);
-    setSplashVisible(true);
-  };
-
   const toggleFuel = (fuel: FuelKey) => {
     setActiveFuels(prev => {
       const next = new Set(prev);
@@ -1815,21 +1223,64 @@ export default function DataCenterMap() {
   // ── Map init ───────────────────────────────────────────────────────────────
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
+    if (!MAPBOX_TOKEN) { console.warn('Mapbox token not configured: water disclosures remain available.'); return; }
+    let disposed=false;
+    const loadTimeout=window.setTimeout(()=>{if(!disposed&&!map.current?.isStyleLoaded())setLoadError(true)},20000);
+    void import('mapbox-gl').then(async ({default:mapboxgl})=>{
+    if(disposed||!mapContainer.current)return;
     mapboxgl.accessToken = MAPBOX_TOKEN;
+    let baseStyle:any='mapbox://styles/mapbox/outdoors-v12';
+    try {
+      const response=await fetch(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12?access_token=${encodeURIComponent(MAPBOX_TOKEN)}`);
+      if(!response.ok)throw Error('Base style unavailable');
+      baseStyle=await response.json();
+      for(const layer of baseStyle.layers||[]) {
+        const id=layer.id;
+        layer.paint ??= {}; layer.layout ??= {};
+        const paint=(key:string,value:any)=>{layer.paint[key]=value};
+        const layout=(key:string,value:any)=>{layer.layout[key]=value};
+        if(layer.type==='background')paint('background-color','#ece9dc');
+        if(layer.type==='symbol'&&/poi|transit|road-number|road-label|path-pedestrian|trail-label/.test(id))layout('visibility','none');
+        if(layer.type==='fill') {
+          if(/water/.test(id)){paint('fill-color','#b3cccd');paint('fill-opacity',1);}
+          else if(/landcover/.test(id))paint('fill-color',['match',['get','class'],'wood','#d5dcc8','grass','#e0e4cf','crop','#e6e5d3','snow','#f8f7ef','#e8e7d7']);
+          else if(/landuse|park|national/.test(id))paint('fill-color','#dce1cc');
+          else if(/building/.test(id))paint('fill-color','#d0cdbd');
+        }
+        if(layer.type==='line') {
+          if(/waterway/.test(id)){paint('line-color','#739fa8');paint('line-opacity',1);}
+          else if(/road|bridge|tunnel/.test(id)){paint('line-color','#beb8a3');paint('line-opacity',0.4);}
+          else if(/admin/.test(id))paint('line-color','#999e8e');
+        }
+        if(layer.type==='hillshade'){
+          paint('hillshade-shadow-color','#747e66');paint('hillshade-highlight-color','#fff9e8');paint('hillshade-accent-color','#a4ac8c');paint('hillshade-exaggeration',0.4);
+        }
+      }
+      baseStyle.transition={duration:0,delay:0};
+    }catch{baseStyle='mapbox://styles/mapbox/outdoors-v12'}
+    if(disposed||!mapContainer.current)return;
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: [-96, 38], zoom: 4,
+      style: baseStyle,
+      center: [initialView.lon, initialView.lat], zoom: initialView.zoom,
       projection: 'mercator' as any,
+      cooperativeGestures:true,
     });
 
-    map.current.on('load', async () => { try {
+    map.current.addControl(new mapboxgl.NavigationControl({showCompass:false}),'bottom-right');
+    map.current.addControl(new mapboxgl.ScaleControl({maxWidth:120,unit:'imperial'}),'bottom-left');
+
+    map.current.on('load', async () => {window.clearTimeout(loadTimeout);setLoadError(false); try {
+
+
       const [dcRes, plantsRes] = await Promise.all([
         fetch('/datacenters.json'),
         fetch('/powerplants.json'),
       ]);
+      if(!dcRes.ok||!plantsRes.ok)throw Error("Inventory data failed to load");
       const json       = await dcRes.json();
       const plantsJson = await plantsRes.json();
+      if(!Array.isArray(json.data)||!Array.isArray(plantsJson.plants))throw Error("Invalid inventory format");
       const data: DataCenter[] = json.data;
       allDcData.current     = data;
       allPlantsData.current = plantsJson.plants;
@@ -1838,7 +1289,10 @@ export default function DataCenterMap() {
 
       // Context bar
       const updateContext = () => {
-        const features = map.current!.queryRenderedFeatures({ layers: ['unclustered'] });
+        const bounds=map.current!.getBounds()!;
+        const inView=(d:{lat:number;lon:number})=>Number.isFinite(d.lat)&&Number.isFinite(d.lon)&&bounds.contains([d.lon,d.lat]);
+        const visibleInventory=data.filter(inView);
+        const features=visibleInventory;
         const center = map.current!.getCenter();
         const zoom   = map.current!.getZoom();
         let region   = 'United States';
@@ -1865,135 +1319,18 @@ export default function DataCenterMap() {
         }
         setContext({ count: features.length, region });
 
-        // Stats strip computation
-        const clusterFeats  = map.current!.queryRenderedFeatures({ layers: ['clusters'] });
-        const emergingFeats = map.current!.queryRenderedFeatures({ layers: ['emerging-uc', 'emerging-planned'] });
-        const clusterTotal  = clusterFeats.reduce((s: number, f: any) => s + (f.properties?.point_count || 0), 0);
-        const totalDCs      = features.length + clusterTotal + emergingFeats.length;
-        const withPPA       = features.filter((f: any) => f.properties?._has_ppas === 1).length;
-
-        const plantFeats = map.current!.queryRenderedFeatures({ layers: ['plants'] });
-        const seen       = new Set<string>();
-        let co2Tons = 0; let plantCount = 0;
-        for (const f of plantFeats) {
-          const coords = (f.geometry as GeoJSON.Point).coordinates;
-          const key    = `${coords[0].toFixed(4)},${coords[1].toFixed(4)}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          const ft = (f.properties?.fuel_type as string) || 'other';
-          const mw = (f.properties?.capacity_mw as number) || 0;
-          co2Tons += mw * (CAPACITY_FACTOR[ft] ?? 0.40) * 8760 * (CO2_KG_PER_MWH[ft] ?? 500) / 1000;
-          plantCount++;
-        }
-        setStats({ totalDCs, mwDemand: totalDCs * 50, co2Tons, plantCount, withPPA, withoutPPA: features.length - withPPA });
+        const plantCount=plantsJson.plants.filter((p:any)=>inView(p)&&ALL_FUELS.includes(p.fuel_type)).length;
+        setStats({totalDCs:visibleInventory.length,mwDemand:0,co2Tons:0,plantCount,withPPA:0,withoutPPA:0});
       };
       map.current!.on('moveend', updateContext);
       map.current!.on('zoomend', updateContext);
       setTimeout(updateContext, 500);
 
-      // NERC reliability zone overlay (added first = bottom of render stack)
-      {
-        map.current!.addSource('nerc-regions', { type: 'geojson', data: NERC_GEO });
-        map.current!.addLayer({ id: 'nerc-fill', type: 'fill', source: 'nerc-regions',
-          layout: { visibility: 'visible' },
-          paint: {
-            'fill-color': ['get', '_color'],
-            'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.10, 8, 0.05],
-          },
-        });
-        map.current!.addLayer({ id: 'nerc-border', type: 'line', source: 'nerc-regions',
-          layout: { visibility: 'visible' },
-          paint: {
-            'line-color': ['get', '_color'],
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1.5, 8, 2.5],
-            'line-opacity': 0.45,
-          },
-        });
-        map.current!.addLayer({ id: 'nerc-label', type: 'symbol', source: 'nerc-regions',
-          minzoom: 2.5, maxzoom: 8,
-          layout: {
-            visibility: 'visible',
-            'text-field': ['format',
-              ['get', '_label'], { 'font-scale': 1.05, 'text-font': ['literal', ['DIN Offc Pro Bold', 'Arial Unicode MS Bold']] },
-              '\n', {},
-              ['get', '_badge'], { 'font-scale': 0.72, 'text-font': ['literal', ['DIN Offc Pro Medium', 'Arial Unicode MS Regular']] },
-            ],
-            'text-font':         ['DIN Offc Pro Medium', 'Arial Unicode MS Regular'],
-            'text-size':         13,
-            'text-justify':      'center',
-            'text-anchor':       'center',
-            'text-max-width':    10,
-            'text-allow-overlap': false,
-            'text-ignore-placement': false,
-          },
-          paint: {
-            'text-color': ['get', '_color'],
-            'text-halo-color': '#040e1f',
-            'text-halo-width': 2,
-            'text-opacity': ['interpolate', ['linear'], ['zoom'], 3, 0.85, 7.5, 0.65],
-          },
-        });
-      }
-
-      // Water stress overlay (county bounding boxes, hardcoded)
-      {
-        const waterGeo: GeoJSON.FeatureCollection = {
-          type: 'FeatureCollection',
-          features: WATER_COUNTIES.map(([x1, y1, x2, y2, stress]) => ({
-            type: 'Feature' as const,
-            geometry: {
-              type: 'Polygon' as const,
-              coordinates: [[[x1, y1], [x2, y1], [x2, y2], [x1, y2], [x1, y1]]],
-            },
-            properties: { _stress: stress },
-          })),
-        };
-
-        map.current!.addSource('water-stress', { type: 'geojson', data: waterGeo });
-
-        // Fill: transparent for low stress, reddening toward extremely high
-        map.current!.addLayer({
-          id: 'water-fill', type: 'fill', source: 'water-stress',
-          layout: { visibility: 'none' }, // off by default
-          paint: {
-            'fill-color': ['interpolate', ['linear'], ['coalesce', ['get', '_stress'], 0],
-              0, '#fbbf24',   // no data anchor (won't show — opacity 0)
-              1, '#fde68a',   // low
-              2, '#f97316',   // medium-high
-              3, '#ef4444',   // high
-              4, '#dc2626',   // very high
-              5, '#7f1d1d',   // extremely high
-            ],
-            'fill-opacity': ['interpolate', ['linear'], ['coalesce', ['get', '_stress'], 0],
-              0,   0,
-              0.5, 0,      // below threshold — fully transparent
-              1,   0.08,
-              2,   0.14,
-              3,   0.20,
-              4,   0.26,
-              5,   0.34,
-            ],
-          },
-        });
-
-        // Thin border only for high-stress counties (reduces visual noise on 3k+ polygons)
-        map.current!.addLayer({
-          id: 'water-border', type: 'line', source: 'water-stress',
-          layout: { visibility: 'none' },
-          filter: ['>=', ['coalesce', ['get', '_stress'], 0], 3],
-          paint: {
-            'line-color': '#ef4444',
-            'line-width': 0.4,
-            'line-opacity': 0.35,
-          },
-        });
-      }
-
       // Power plants
       const plantsGeojson: GeoJSON.FeatureCollection = {
         type: 'FeatureCollection',
         features: (plantsJson.plants as any[])
-          .filter(p => p.lat && p.lon && p.fuel_type !== 'other')
+          .filter(p => p.lat && p.lon && ALL_FUELS.includes(p.fuel_type))
           .map(p => ({
             type: 'Feature',
             geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
@@ -2005,10 +1342,10 @@ export default function DataCenterMap() {
         'solar', FUEL.solar, 'wind', FUEL.wind, 'hydro', FUEL.hydro, FUEL.other,
       ];
       map.current!.addSource('plants', { type: 'geojson', data: plantsGeojson });
-      map.current!.addLayer({ id: 'plants-glow', type: 'circle', source: 'plants', layout: { visibility: 'visible' },
+      map.current!.addLayer({ id: 'plants-glow', type: 'circle', source: 'plants', layout: { visibility: initialView.mode==='energy'?'visible':'none' },
         paint: { 'circle-color': fuelColorExpr, 'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 12, 6, 16, 10, 24], 'circle-opacity': 0.15, 'circle-blur': 1 },
       });
-      map.current!.addLayer({ id: 'plants', type: 'circle', source: 'plants', layout: { visibility: 'visible' },
+      map.current!.addLayer({ id: 'plants', type: 'circle', source: 'plants', layout: { visibility: initialView.mode==='energy'?'visible':'none' },
         paint: { 'circle-color': fuelColorExpr, 'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 6, 7, 9, 10, 13, 14, 18], 'circle-opacity': 0.9, 'circle-stroke-width': 1.5, 'circle-stroke-color': '#000', 'circle-stroke-opacity': 0.5 },
       });
 
@@ -2036,6 +1373,16 @@ export default function DataCenterMap() {
       const geojson: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: allFeatures };
       map.current!.addSource('datacenters', { type: 'geojson', data: geojson, cluster: true, clusterMaxZoom: 9, clusterRadius: 36 });
 
+      const waterFeatures = WATER_RECORDS.flatMap(record => {
+        const dc = data.find(d => record.facilityIds.includes(d.id));
+        return dc ? [{type:'Feature' as const, geometry:{type:'Point' as const, coordinates:[dc.lon,dc.lat]}, properties:{facilityId:dc.id,location:record.location,daily:dailyGallons(record.consumptionMillionGallons,record.year)}}] : [];
+      });
+      map.current!.addSource('water-reports',{type:'geojson',data:{type:'FeatureCollection',features:waterFeatures}});
+      map.current!.addLayer({id:'water-reports',type:'circle',source:'water-reports',layout:{visibility:'none'},paint:{'circle-radius':['interpolate',['linear'],['sqrt',['get','daily']],0,5,2000,38],'circle-color':'#245D62','circle-opacity':0.17,'circle-stroke-width':1.8,'circle-stroke-color':'#245D62'}});
+      map.current!.addLayer({id:'water-report-labels',type:'symbol',source:'water-reports',minzoom:5.5,layout:{visibility:'none','text-field':['get','location'],'text-font':['DIN Offc Pro Medium','Arial Unicode MS Regular'],'text-size':11,'text-anchor':'top','text-offset':[0,2.8],'text-max-width':14},paint:{'text-color':'#17434b','text-halo-color':'#fbfaf5','text-halo-width':1.5}});
+      map.current!.on('click','water-reports',e=>{const dc=data.find(d=>d.id===e.features?.[0].properties?.facilityId);if(dc)setSelected(dc);setFacilityTab('water');setWaterOpen(false);});
+      map.current!.on('mouseenter','water-reports',()=>{map.current!.getCanvas().style.cursor='pointer';});
+      map.current!.on('mouseleave','water-reports',()=>{map.current!.getCanvas().style.cursor='';});
       // Planned/under-construction DC source (no clustering — only 20 points)
       map.current!.addSource('planned-dcs', {
         type: 'geojson',
@@ -2061,14 +1408,14 @@ export default function DataCenterMap() {
       });
 
       map.current!.addLayer({ id: 'clusters-glow', type: 'circle', source: 'datacenters', filter: ['has', 'point_count'],
-        paint: { 'circle-color': '#6366f1', 'circle-radius': ['step', ['get', 'point_count'], 22, 10, 30, 50, 38], 'circle-opacity': 0.25, 'circle-blur': 0.6 },
+        paint: { 'circle-color': '#303A39', 'circle-radius': ['step', ['get', 'point_count'], 22, 10, 30, 50, 38], 'circle-opacity': 0.25, 'circle-blur': 0.6 },
       });
       map.current!.addLayer({ id: 'clusters', type: 'circle', source: 'datacenters', filter: ['has', 'point_count'],
-        paint: { 'circle-color': '#4f46e5', 'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30], 'circle-opacity': 0.95, 'circle-stroke-width': 1.5, 'circle-stroke-color': '#818cf8' },
+        paint: { 'circle-color': '#303A39', 'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30], 'circle-opacity': 0.95, 'circle-stroke-width': 1.5, 'circle-stroke-color': '#FAFAF7' },
       });
       map.current!.addLayer({ id: 'cluster-count', type: 'symbol', source: 'datacenters', filter: ['has', 'point_count'],
         layout: { 'text-field': '{point_count_abbreviated}', 'text-size': 11, 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'] },
-        paint: { 'text-color': '#e0e7ff' },
+        paint: { 'text-color': '#FAFAF7' },
       });
       map.current!.addLayer({ id: 'unclustered-glow', type: 'circle', source: 'datacenters', filter: ['!', ['has', 'point_count']],
         paint: { 'circle-color': ['get', '_color'], 'circle-radius': 12, 'circle-opacity': 0.12, 'circle-blur': 1.2 },
@@ -2096,7 +1443,7 @@ export default function DataCenterMap() {
         paint: {
           'circle-color': ['get', 'fuel_color'],
           'circle-radius': 6, 'circle-opacity': 1,
-          'circle-stroke-width': 2, 'circle-stroke-color': '#040e1f', 'circle-stroke-opacity': 0.9,
+          'circle-stroke-width': 2, 'circle-stroke-color': '#FAFAF7', 'circle-stroke-opacity': 0.9,
         },
       });
       map.current!.addLayer({
@@ -2113,14 +1460,14 @@ export default function DataCenterMap() {
         },
         paint: {
           'text-color': ['get', 'fuel_color'],
-          'text-halo-color': '#040e1f', 'text-halo-width': 1.5,
+          'text-halo-color': '#FAFAF7', 'text-halo-width': 1.5,
         },
       });
 
       map.current!.on('click', 'clusters', (e) => {
         const features  = map.current!.queryRenderedFeatures(e.point, { layers: ['clusters'] });
         const clusterId = features[0].properties!.cluster_id;
-        (map.current!.getSource('datacenters') as mapboxgl.GeoJSONSource).getClusterExpansionZoom(clusterId, (err, zoom) => {
+        (map.current!.getSource('datacenters') as GeoJSONSource).getClusterExpansionZoom(clusterId, (err, zoom) => {
           if (err) return;
           map.current!.easeTo({ center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number], zoom: zoom! });
         });
@@ -2132,7 +1479,7 @@ export default function DataCenterMap() {
       map.current!.on('click', 'emerging-uc', (e) => parseAndSelect(e.features![0].properties!));
       map.current!.on('click', 'emerging-planned', (e) => parseAndSelect(e.features![0].properties!));
       map.current!.on('click', (e) => {
-        const features = map.current!.queryRenderedFeatures(e.point, { layers: ['unclustered', 'clusters', 'emerging-uc', 'emerging-planned'] });
+        const features = map.current!.queryRenderedFeatures(e.point, { layers: ['unclustered', 'clusters', 'emerging-uc', 'emerging-planned', 'water-reports'] });
         if (features.length === 0) setSelected(null);
       });
       ['clusters', 'unclustered', 'emerging-uc', 'emerging-planned'].forEach(layer => {
@@ -2141,159 +1488,59 @@ export default function DataCenterMap() {
       });
 
       // ── Deep-link on load ────────────────────────────────────────────────────
-      const facilityId = new URLSearchParams(window.location.search).get('facility');
+      const facilityId = initialView.facility;
       if (facilityId) {
         const target = data.find((d: any) => d.id === facilityId);
         if (target?.lat && target?.lon) {
           setSelected(target as DataCenter);
-          // Delay flyTo slightly so the map finishes its initial render first
+          // Restore a shared camera exactly; legacy facility-only links center the campus.
           setTimeout(() => {
-            map.current?.flyTo({ center: [target.lon, target.lat], zoom: 13, duration: 2200, essential: true });
+            if(!initialView.hasCamera)map.current?.jumpTo({center:[target.lon,target.lat],zoom:12});
           }, 400);
         }
       }
 
-    } catch (err) { console.error('Map load error:', err); } });
+      setViewReady(true);
+    } catch (err) { setLoadError(true);console.error('Map inventory could not load'); } });
+    }).catch(()=>{if(!disposed)setLoadError(true)});
+    return ()=>{disposed=true;tourActive.current=false;clearTourTimers();window.clearTimeout(loadTimeout);if(electronAnimRef.current!==null)cancelAnimationFrame(electronAnimRef.current);map.current?.remove();map.current=null;};
   }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ position: 'fixed', inset: 0, background: C.bg, fontFamily: SANS }}>
+    <div className="atlas-workspace" data-mode={mode} data-inspecting={Boolean(selected||waterOpen||gridOpen||compareOpen||registerOpen)} style={{ position: 'absolute', inset: 0, background: C.bg, fontFamily: SANS }}>
 
       {/* ── Header ── */}
-      <header style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 56,
-        background: `${C.bg}f2`, borderBottom: `1px solid ${C.border}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 24px', zIndex: 20, backdropFilter: 'blur(10px)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div>
-            <span style={{ fontFamily: SANS, fontSize: 14, fontWeight: 800, letterSpacing: '-0.025em', color: C.text, textTransform: 'uppercase' }}>
-              US Data Center
-            </span>
-            <span style={{ fontFamily: SANS, fontSize: 14, fontWeight: 300, letterSpacing: '-0.01em', color: C.text2, marginLeft: 7 }}>
-              Power Map
-            </span>
-          </div>
-          <div style={{ width: 1, height: 18, background: C.border2, marginLeft: 2 }} />
-          <div style={{ fontFamily: MONO, fontSize: 9, color: C.text3, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            AI infrastructure is an energy policy problem
-          </div>
+      <header className="map-header product-header"><div><div className="product-brand"><strong>Compute Atlas</strong><a className="creator-link" href="https://kevinclark.ai">by Kevin Clark ↗</a></div></div>        <nav className="mode-nav" aria-label="Resource view">{['overview','energy','grid','water'].map(value=><button key={value} aria-pressed={mode===value} onClick={()=>switchMode(value)}>{value==='water'?'Water':value==='grid'?'Grid':value==='energy'?'Energy':'Facilities'}</button>)}</nav><div className="product-actions"><span className="coverage-caption">{loaded?`${total.toLocaleString()} inventory records · dates vary`:'Independent research preview'}</span><button aria-label="Search facilities" disabled={!loaded} onClick={()=>setSearchOpen(true)}>⌕ <span>Search</span></button><button className="rail-toggle" aria-label="Map layers" aria-expanded={layerPanelOpen} onClick={()=>{setLayerPanelOpen(v=>!v);setRegisterOpen(false);setWaterOpen(false);setGridOpen(false);setCompareOpen(false);}}>☷ <span>Layers</span></button><button className="register-launch" onClick={()=>{setRegisterOpen(v=>!v);setSelected(null);setGridOpen(false);setWaterOpen(false);setCompareOpen(false);setLayerPanelOpen(false)}}>Register</button><button className="compare-launch" onClick={()=>{setCompareOpen(v=>!v);setRegisterOpen(false);setWaterOpen(false);setGridOpen(false);setLayerPanelOpen(false)}}>Compare {comparison.length||""}</button><a href="/evidence" aria-label="Sources and evidence">Sources ↗</a><button aria-label="Map guide" aria-pressed={tourRunning} disabled={!loaded} onClick={()=>{setSelected(null);tourRunning?endTour():startTour();}}>?</button></div></header>
+
+      <section className="investigation-intro" aria-label="Start a resource investigation"><p className="map-edition">{waterMode?"WATER / UNITED STATES":"US INFRASTRUCTURE / RESEARCH ATLAS"}</p><h1>{waterMode?<>Where does the<br/>water come from?</>:<>Data centers.<br/>Power. Water. Grid.</>}</h1><p>Independent infrastructure research for utilities, grid operators, developers, and researchers.</p>{!waterMode&&<button onClick={()=>{switchMode("grid");setGridOpen(true)}}>Explore grid context ↗</button>}<button className={waterMode?"":"secondary-investigation"} disabled={!loaded} onClick={()=>{const dc=allDcData.current.find(d=>d.id==='dc_pnnl_00171');if(dc){switchMode('water');setSelected(dc);setFacilityTab('water');map.current?.flyTo({center:[dc.lon,dc.lat],zoom:10.5,padding:window.innerWidth>800?{top:40,bottom:40,left:40,right:360}:{top:40,bottom:330,left:20,right:20}})}}}>Investigate The Dalles <span>↗</span></button><button className="intro-browse" onClick={()=>{switchMode('water');setGridOpen(false);setWaterOpen(true)}}>Browse water disclosures →</button></section>
+      <div className="cartographic-key">{gridLayer!=="none"&&<p className="grid-map-date">Historical grid snapshot · {gridManifest.layers.find(l=>l.id===gridLayer)?.title}<br/>Source {gridManifest.layers.find(l=>l.id===gridLayer)?.sourceDates.join(" to ")} · not current connection evidence</p>}<div>{showDataCenters&&<><span className="key-location"/> Facility inventory</>}{showPlants&&<><span className="key-energy"/> Generation by fuel</>}{waterMode&&<><span className="key-water"/> Reported water use {Boolean(watershedLevel)&&<><span className="key-boundary"/> Campus watershed</>}</>}</div><p>{waterMode?'Circle size: annual-average daily consumption · 2025 disclosures':'Inventory locations and generation context · reporting dates vary'}</p><a href="/evidence">Research preview · reviewed Oct 18, 2026 · sources ↗</a></div>
+      <aside className={`analysis-rail ${layerPanelOpen?'is-open':''}`} aria-label="Explore resources" onKeyDown={e=>{if(e.key==='Escape')setLayerPanelOpen(false)}}>
+        <div className="rail-intro"><span className="rail-kicker">MAP CONTENTS</span><h2>Layers &amp; boundaries</h2><button className="rail-close" aria-label="Close resource controls" onClick={()=>setLayerPanelOpen(false)}>×</button></div>
+        <button className="rail-search" disabled={!loaded} onClick={()=>setSearchOpen(true)}><span aria-hidden="true">⌕</span> Find a facility or power plant <span aria-hidden="true">↗</span></button>
+
+        <div className="rail-view"><GridLayerSelect value={gridLayer} onChange={setGridLayer}/><button className="directory-action" onClick={()=>{setGridOpen(true);setSelected(null);setWaterOpen(false);setLayerPanelOpen(false)}}>Grid sources &amp; regional inventory →</button><p className="rail-note">Boundary snapshots are historical. Confirm operational roles and connection evidence separately.</p><h2>{waterMode?'Water systems':mode==='energy'?'Energy infrastructure':'Facility inventory'}</h2><p>{waterMode?'Reported use, documented sources, and campus drainage areas.':mode==='energy'?'Generation locations and fuel types. Proximity does not establish supply.':'Location inventory. Capacity and operator fields have uneven coverage.'}</p>
+        {waterMode&&<><button className="directory-action" onClick={()=>{setSelected(null);setWaterOpen(v=>!v);setLayerPanelOpen(false)}}>Browse 26 water disclosures <span>→</span></button><label className="watershed-selector" htmlFor="atlas-watershed-level">Watershed boundaries<select id="atlas-watershed-level" aria-label="Watershed boundaries" value={watershedLevel} onChange={e=>setWatershedLevel(Number(e.target.value))}><option value={0}>Hidden</option><option value={2}>Region · HUC 2</option><option value={4}>Subregion · HUC 4</option><option value={8}>Subbasin · HUC 8</option><option value={12}>Subwatershed · HUC 12</option></select></label><div className="size-key" aria-hidden="true"><i/><i/><i/><span>Lower → higher consumption</span></div><p className="rail-note">Circle size indicates annual-average daily consumption. Boundaries show campus drainage, not supply catchments.</p></>}
         </div>
+      {/* Layer panel — always mounted, slides in/out */}
+      <LayerPanel
+        open={true} onClose={()=>setLayerPanelOpen(false)}
+        showDataCenters={showDataCenters} onToggleDC={() => setShowDataCenters(v => !v)}
+        showPlants={showPlants}           onTogglePlants={() => setShowPlants(v => !v)}
+        showPlanned={showPlanned}         onTogglePlanned={() => setShowPlanned(v => !v)}
+        activeFuels={activeFuels}         onToggleFuel={toggleFuel}
+        topOffset={86 + (stats && statsExpanded ? 30 : 0)}
+      />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Tour button */}
-          <button onClick={tourRunning ? endTour : startTour} disabled={!loaded} style={{
-            fontFamily: SANS, fontSize: 12, fontWeight: 700, letterSpacing: '-0.01em',
-            padding: '7px 16px', borderRadius: 5, cursor: loaded ? 'pointer' : 'default',
-            border: tourRunning ? `1px solid ${C.border2}` : `1px solid ${C.green}50`,
-            background: tourRunning ? C.surface2 : `${C.green}18`,
-            color: tourRunning ? C.text3 : C.green,
-            opacity: loaded ? 1 : 0.35, transition: 'all 0.18s',
-            display: 'flex', alignItems: 'center', gap: 7,
-          }}>
-            {tourRunning ? <><span style={{ fontSize: 10 }}>✕</span> End Tour</> : <><span style={{ fontSize: 11 }}>▶</span> Show me the story</>}
-          </button>
-
-          <div style={{ width: 1, height: 16, background: C.border }} />
-
-          {/* Plants quick toggle */}
-          <button onClick={() => setShowPlants(v => !v)} style={{
-            fontFamily: MONO, fontSize: 9, fontWeight: 600, letterSpacing: '0.1em',
-            padding: '5px 13px', borderRadius: 4, cursor: 'pointer',
-            border: `1px solid ${showPlants ? C.border2 : C.border}`,
-            background: showPlants ? C.surface3 : 'transparent',
-            color: showPlants ? C.text2 : C.text3,
-            textTransform: 'uppercase', transition: 'all 0.15s',
-          }}>
-            ⚡ Plants {showPlants ? 'On' : 'Off'}
-          </button>
-
-          {/* Layers panel button */}
-          <button onClick={() => { setLayerPanelOpen(v => !v); setAboutOpen(false); }} style={{
-            fontFamily: MONO, fontSize: 9, fontWeight: 600, letterSpacing: '0.1em',
-            padding: '5px 13px', borderRadius: 4, cursor: 'pointer',
-            border: `1px solid ${layerPanelOpen ? C.border2 : C.border}`,
-            background: layerPanelOpen ? C.surface3 : 'transparent',
-            color: layerPanelOpen ? C.text : C.text3,
-            textTransform: 'uppercase', transition: 'all 0.15s',
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-            <svg width="12" height="10" viewBox="0 0 12 10" fill="none" style={{ opacity: layerPanelOpen ? 1 : 0.6 }}>
-              <rect y="0" width="12" height="1.5" rx="0.75" fill="currentColor"/>
-              <rect y="4.25" width="12" height="1.5" rx="0.75" fill="currentColor"/>
-              <rect y="8.5" width="12" height="1.5" rx="0.75" fill="currentColor"/>
-            </svg>
-            Layers
-          </button>
-
-          {/* Search button */}
-          <button
-            onClick={() => setSearchOpen(v => !v)}
-            disabled={!loaded}
-            title="Search facilities"
-            style={{
-              width: 30, height: 30, borderRadius: 5, flexShrink: 0,
-              background: searchOpen ? C.surface3 : 'transparent',
-              border: `1px solid ${searchOpen ? C.border2 : C.border}`,
-              color: searchOpen ? C.text : C.text3,
-              cursor: loaded ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              opacity: loaded ? 1 : 0.35, transition: 'all 0.15s',
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5"/>
-              <line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </button>
-
-          <div style={{ width: 1, height: 16, background: C.border }} />
-
-          {loaded && (
-            <div style={{ fontFamily: MONO, fontSize: 11, color: C.text3 }}>
-              <span style={{ color: C.green, fontWeight: 700 }}>{total.toLocaleString()}</span>
-              <span style={{ marginLeft: 5 }}>facilities</span>
-            </div>
-          )}
-          <div style={{ fontFamily: MONO, fontSize: 9, color: C.text3, letterSpacing: '0.06em' }}>
-            PNNL IM3 · EIA 860/923 · 2023
-          </div>
-
-          {/* Methodology & About */}
-          <button
-            onClick={() => { setAboutOpen(v => !v); setLayerPanelOpen(false); }}
-            title="Methodology & about"
-            style={{
-              fontFamily: MONO, fontSize: 9, fontWeight: 600, letterSpacing: '0.1em',
-              padding: '5px 11px', borderRadius: 4, cursor: 'pointer',
-              border: `1px solid ${aboutOpen ? C.border2 : C.border}`,
-              background: aboutOpen ? C.surface3 : 'transparent',
-              color: aboutOpen ? C.text2 : C.text3,
-              textTransform: 'uppercase', transition: 'all 0.15s',
-            }}
-          >About</button>
-
-          {/* Reopen splash */}
-          <button
-            onClick={reopenSplash}
-            title="Reopen intro"
-            style={{
-              width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-              background: 'transparent', border: `1px solid ${C.border}`,
-              color: C.text3, cursor: 'pointer',
-              fontFamily: MONO, fontSize: 11, fontWeight: 600,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              lineHeight: 1, transition: 'border-color 0.15s, color 0.15s',
-            }}
-          >?</button>
-        </div>
-      </header>
-
+        <div className="rail-evidence"><span>RESEARCH COVERAGE</span><strong>{loaded?total.toLocaleString():'—'} locations <b> / </b> 26 disclosures</strong><p>Inventory dates vary · water reporting year 2025.<br/>Unreported use remains unknown.</p><a href="/evidence">Sources, dates &amp; methodology ↗</a></div>
+      </aside>
+      {registerOpen&&<FacilityDirectory facilities={allDcData.current} loaded={loaded} onClose={()=>setRegisterOpen(false)} onSelect={record=>{const dc=allDcData.current.find(d=>d.id===record.id);if(dc){setSelected(dc);setRegisterOpen(false);setFacilityTab('overview');map.current?.flyTo({center:[dc.lon,dc.lat],zoom:11,padding:window.innerWidth>800?{top:90,bottom:90,left:40,right:370}:{top:110,bottom:360,left:20,right:20}});}}}/>}
+      {gridOpen&&<GridExplorer layer={gridLayer} onLayer={setGridLayer} onClose={()=>setGridOpen(false)} facilities={allDcData.current} onLocate={feature=>{const b=geometryBounds(feature.geometry);if(b)map.current?.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:window.innerWidth>800?{top:90,bottom:90,left:50,right:370}:60,maxZoom:10});}}/>}
+      {gridStatus&&<p className="grid-map-status" role="status">{gridStatus}</p>}
+      {waterOpen && <WaterExplorer watershedLevel={watershedLevel} onWatershedLevel={setWatershedLevel} canLocate={loaded} onClose={()=>setWaterOpen(false)} onSelect={(record: WaterRecord)=>{const dc=allDcData.current.find(d=>record.facilityIds.includes(d.id)); if(dc){setSelected(dc);setFacilityTab('water');setWaterOpen(false);map.current?.flyTo({center:[dc.lon,dc.lat],zoom:12,padding:window.innerWidth>800?{top:90,bottom:90,left:40,right:370}:{top:110,bottom:360,left:20,right:20}});}}}/>}
       {/* ── Context bar ── */}
       {context && (
-        <div style={{
+        <div className="context-bar" style={{
           position: 'absolute', top: 56, left: 0, right: 0, height: 30,
           background: C.surface, borderBottom: `1px solid ${C.border}`,
           display: 'flex', alignItems: 'center',
@@ -2302,16 +1549,8 @@ export default function DataCenterMap() {
           <span style={{ fontFamily: MONO, fontSize: 10, color: C.text, letterSpacing: '0.02em' }}>{context.region}</span>
           <div style={{ width: 1, height: 12, background: C.border2 }} />
           <span style={{ fontFamily: MONO, fontSize: 10, color: C.text3 }}>
-            <span style={{ color: C.green, fontWeight: 700 }}>{context.count}</span> facilities in view
+            <span style={{ color: C.green, fontWeight: 700 }}>{context.count}</span> inventory locations in bounds
           </span>
-          {ppasOnly && (
-            <>
-              <div style={{ width: 1, height: 12, background: C.border2 }} />
-              <span style={{ fontFamily: MONO, fontSize: 9, color: FUEL.nuclear, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                ⚡ PPAs only
-              </span>
-            </>
-          )}
           {!showDataCenters && (
             <>
               <div style={{ width: 1, height: 12, background: C.border2 }} />
@@ -2338,13 +1577,19 @@ export default function DataCenterMap() {
         </div>
       )}
 
-      {stats && <StatsStrip stats={stats} expanded={statsExpanded} />}
+      {stats && !waterMode && <StatsStrip stats={stats} expanded={statsExpanded} />}
 
-      <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
+      {!loaded&&!loadError&&MAPBOX_TOKEN&&<p className="map-loading" role="status">Loading map &amp; reviewed inventory… Water disclosures and sources remain available.</p>}
+      {loadError && <p role="alert" className="load-error">The map or inventory could not load. Counts and map coverage are unavailable. Water disclosures and the evidence register remain accessible.</p>}
+      {!MAPBOX_TOKEN && <p style={{position:'absolute',top:130,left:24,color:C.text2,maxWidth:360,fontSize:14,lineHeight:1.6}}>Map tiles need the existing public Mapbox token in this local checkout. Water source disclosures are available through the Water button.</p>}
+      <div className="map-canvas" ref={mapContainer} style={{ width: '100%', height: '100%' }} />
 
-      {selected && (
-        <DetailPanel
+      {compareOpen&&<FacilityComparison facilities={comparison} onClose={()=>setCompareOpen(false)} onRemove={id=>setComparison(rows=>rows.filter(dc=>dc.id!==id))}/> }
+      {selected && !compareOpen && (
+        <FacilityPanel key={selected.id} tab={facilityTab} onTab={setFacilityTab}
           dc={selected}
+          comparisonState={comparison.some(dc=>dc.id===selected.id)?"added":comparison.length>=3?"full":"available"}
+          onCompare={()=>{setComparison(rows=>rows.some(dc=>dc.id===selected.id)?rows:rows.length<3?[...rows,selected]:rows);setCompareOpen(true);setGridOpen(false);setWaterOpen(false);}}
           onClose={() => setSelected(null)}
           showElectrons={showElectrons}
           onToggleElectrons={() => setShowElectrons(v => !v)}
@@ -2358,27 +1603,6 @@ export default function DataCenterMap() {
         />
       )}
 
-      {/* Layer panel — always mounted, slides in/out */}
-      <LayerPanel
-        open={layerPanelOpen}
-        showDataCenters={showDataCenters} onToggleDC={() => setShowDataCenters(v => !v)}
-        showPlants={showPlants}           onTogglePlants={() => setShowPlants(v => !v)}
-        showPlanned={showPlanned}         onTogglePlanned={() => setShowPlanned(v => !v)}
-        showNerc={showNerc}               onToggleNerc={() => setShowNerc(v => !v)}
-        showWater={showWater}             onToggleWater={() => setShowWater(v => !v)}
-        activeFuels={activeFuels}         onToggleFuel={toggleFuel}
-        ppasOnly={ppasOnly}               onTogglePpasOnly={() => setPpasOnly(v => !v)}
-        topOffset={86 + (stats && statsExpanded ? 30 : 0)}
-      />
-
-      {/* Overlay to close layer panel on outside click */}
-      {layerPanelOpen && (
-        <div
-          onClick={() => setLayerPanelOpen(false)}
-          style={{ position: 'absolute', inset: 0, zIndex: 11 }}
-        />
-      )}
-
       {/* About / methodology panel */}
       <AboutPanel open={aboutOpen} onClose={() => setAboutOpen(false)} />
       {aboutOpen && (
@@ -2388,7 +1612,7 @@ export default function DataCenterMap() {
         />
       )}
 
-      <Legend showPlants={showPlants} showPlanned={showPlanned} />
+
 
       {/* Search overlay */}
       {searchOpen && (
@@ -2396,14 +1620,14 @@ export default function DataCenterMap() {
           dcs={allDcData.current}
           plants={allPlantsData.current}
           onSelectDc={dc => {
-            setSelected(dc);
+            setSelected(dc);setRegisterOpen(false);setCompareOpen(false);setWaterOpen(false);setFacilityTab('overview');
             setSearchOpen(false);
             setLayerPanelOpen(false);
-            map.current?.flyTo({ center: [dc.lon, dc.lat], zoom: 13, duration: 1800, essential: true });
+            map.current?.flyTo({ center: [dc.lon, dc.lat], zoom: 13, padding:window.innerWidth>800?{top:90,bottom:90,left:40,right:370}:{top:110,bottom:360,left:20,right:20}, duration: 1000 });
           }}
           onSelectPlant={p => {
             setSearchOpen(false);
-            map.current?.flyTo({ center: [p.lon, p.lat], zoom: 11, duration: 1800, essential: true });
+            map.current?.flyTo({ center: [p.lon, p.lat], zoom: 11, padding:0, duration: 1000 });
           }}
           onClose={() => setSearchOpen(false)}
         />

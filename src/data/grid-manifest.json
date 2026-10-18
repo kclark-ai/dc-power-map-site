@@ -1,0 +1,62 @@
+{
+  "retrievedAt": "2026-10-17",
+  "scope": "Dated historical geographic context. Not current operational boundaries or confirmed campus electrical relationships.",
+  "layers": [
+    {
+      "id": "nerc",
+      "title": "Historical NERC regions / subregions",
+      "url": "https://services5.arcgis.com/HDRa0B57OVrv2E1q/arcgis/rest/services/NERC_Regions/FeatureServer/0",
+      "publisher": "HIFLD-derived public service; original source fields retained",
+      "sourceDates": [
+        "2010-10-01",
+        "2010-10-01"
+      ],
+      "features": 16,
+      "sha256": "70f918c136c5f677709b4dc6b1f1b292cb38ba30ff78719f77ba23e1d125ecea",
+      "file": "/grid/nerc.geojson",
+      "simplificationDegrees": 0.01
+    },
+    {
+      "id": "iso",
+      "title": "Historical ISO / RTO footprints",
+      "url": "https://services8.arcgis.com/Rl9BjEMrBgxxeBfh/arcgis/rest/services/Independent_System_Operator/FeatureServer/0",
+      "publisher": "PNNL public service; HIFLD-derived FERC / EIA / Census source",
+      "sourceDates": [
+        "2020-06-24",
+        "2020-06-24"
+      ],
+      "features": 7,
+      "sha256": "6f87574c9677233988d65539715feb1609915c091e61a25d52b4d4b96682c190",
+      "file": "/grid/iso.geojson",
+      "simplificationDegrees": 0.01
+    },
+    {
+      "id": "ba",
+      "title": "Historical electric planning areas",
+      "url": "https://services5.arcgis.com/HDRa0B57OVrv2E1q/arcgis/rest/services/Electric_Planning_Areas/FeatureServer/0",
+      "publisher": "HIFLD-derived public service; planning areas are not confirmed current balancing-authority assignments",
+      "sourceDates": [
+        "2019-06-20",
+        "2019-06-20"
+      ],
+      "features": 94,
+      "sha256": "d1d4945b8f492d91cc204cdabcc4280dff17cae6eed306a125deadcbe02c0da2",
+      "file": "/grid/ba.geojson",
+      "simplificationDegrees": 0.01
+    },
+    {
+      "id": "utility",
+      "title": "Historical retail service territories",
+      "url": "https://services5.arcgis.com/HDRa0B57OVrv2E1q/arcgis/rest/services/Electric_Retail_Service_Territories/FeatureServer/0",
+      "publisher": "HIFLD-derived public service; territory coverage does not confirm campus service",
+      "sourceDates": [
+        "2015-09-29",
+        "2019-10-01"
+      ],
+      "features": 2944,
+      "sha256": "b8114644b2b7f8ca0724b353c5a5cf6aee92eb2e18b595e29b5c178a244a1e52",
+      "file": "/grid/utility.geojson",
+      "simplificationDegrees": 0.01
+    }
+  ]
+}

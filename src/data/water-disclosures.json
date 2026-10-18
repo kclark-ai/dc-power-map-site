@@ -1,0 +1,374 @@
+{
+  "checkedAt": "2026-10-16",
+  "reportUrl": "https://sustainability.google/files/1699a2e19277e478b38a659f00cb38398a836e8c/download-1699a2e1.pdf#page=97",
+  "reportPage": 97,
+  "period": "2025-01-01/2025-12-31",
+  "scope": "Google-reported US locations; location totals may span several buildings or campuses. Not a complete inventory of US data center water use.",
+  "records": [
+    {
+      "id": "ashburn-va",
+      "operator": "Google",
+      "location": "Ashburn, VA",
+      "year": 2025,
+      "withdrawalMillionGallons": 76.5,
+      "consumptionMillionGallons": 53.2,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "berkeley-county-sc",
+      "operator": "Google",
+      "location": "Berkeley County, SC",
+      "year": 2025,
+      "withdrawalMillionGallons": 988.5,
+      "consumptionMillionGallons": 901.7,
+      "facilityIds": [
+        "dc_pnnl_00546",
+        "dc_pnnl_00555",
+        "dc_pnnl_00917",
+        "dc_pnnl_00918",
+        "dc_pnnl_00919",
+        "dc_pnnl_00920",
+        "dc_pnnl_00921",
+        "dc_pnnl_00922",
+        "dc_pnnl_00923",
+        "dc_pnnl_00924"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "bristow-va",
+      "operator": "Google",
+      "location": "Bristow, VA",
+      "year": 2025,
+      "withdrawalMillionGallons": 359.6,
+      "consumptionMillionGallons": 267.6,
+      "facilityIds": [
+        "dc_pnnl_01095",
+        "dc_pnnl_01145",
+        "dc_pnnl_01342"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "council-bluffs-ia",
+      "operator": "Google",
+      "location": "Council Bluffs, IA",
+      "year": 2025,
+      "withdrawalMillionGallons": 1746.4,
+      "consumptionMillionGallons": 1346.0,
+      "facilityIds": [
+        "dc_pnnl_00513",
+        "dc_pnnl_00929",
+        "dc_pnnl_00930",
+        "dc_pnnl_00931",
+        "dc_pnnl_00932",
+        "dc_pnnl_00933",
+        "dc_pnnl_00934",
+        "dc_pnnl_00935",
+        "dc_pnnl_00936",
+        "dc_pnnl_00937",
+        "dc_pnnl_00938",
+        "dc_pnnl_00939",
+        "dc_pnnl_00940",
+        "dc_pnnl_00941",
+        "dc_pnnl_00942",
+        "dc_pnnl_01152",
+        "dc_pnnl_01153"
+      ],
+      "sourceDescription": "Missouri River floodplain aquifer, according to MidAmerican Energy\u2019s facility description. Source proportions are not reported.",
+      "sourceUrl": "https://www.midamericanenergy.com/datacenters/water"
+    },
+    {
+      "id": "douglas-county-ga",
+      "operator": "Google",
+      "location": "Douglas County, GA",
+      "year": 2025,
+      "withdrawalMillionGallons": 440.6,
+      "consumptionMillionGallons": 367.1,
+      "facilityIds": [
+        "dc_pnnl_00512"
+      ],
+      "sourceDescription": "Reclaimed municipal wastewater and potable water. The 2025 disclosure reports 394.3 million gallons of reclaimed wastewater and 46.3 million gallons of potable water withdrawn. Google describes its reuse-water partnership with the Douglasville-Douglas County Water and Sewer Authority in a 2012 facility account.",
+      "sourceUrl": "https://green.googleblog.com/2012/03/helping-hooch-with-water-conservation.html"
+    },
+    {
+      "id": "henderson-nv",
+      "operator": "Google",
+      "location": "Henderson, NV",
+      "year": 2025,
+      "withdrawalMillionGallons": 401.7,
+      "consumptionMillionGallons": 239.4,
+      "facilityIds": [
+        "dc_pnnl_00750",
+        "dc_pnnl_00751"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "jackson-county-al",
+      "operator": "Google",
+      "location": "Jackson County, AL",
+      "year": 2025,
+      "withdrawalMillionGallons": 191.0,
+      "consumptionMillionGallons": 173.6,
+      "facilityIds": [
+        "dc_pnnl_00752",
+        "dc_pnnl_00753"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "lancaster-oh",
+      "operator": "Google",
+      "location": "Lancaster, OH",
+      "year": 2025,
+      "withdrawalMillionGallons": 307.1,
+      "consumptionMillionGallons": 135.8,
+      "facilityIds": [
+        "dc_pnnl_01104"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "leesburg-va",
+      "operator": "Google",
+      "location": "Leesburg, VA",
+      "year": 2025,
+      "withdrawalMillionGallons": 238.1,
+      "consumptionMillionGallons": 190.7,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "lenoir-nc",
+      "operator": "Google",
+      "location": "Lenoir, NC",
+      "year": 2025,
+      "withdrawalMillionGallons": 378.3,
+      "consumptionMillionGallons": 344.3,
+      "facilityIds": [
+        "dc_pnnl_00001"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "lockbourne-oh",
+      "operator": "Google",
+      "location": "Lockbourne, OH",
+      "year": 2025,
+      "withdrawalMillionGallons": 460.8,
+      "consumptionMillionGallons": 359.5,
+      "facilityIds": [
+        "dc_pnnl_01094",
+        "dc_pnnl_01139"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "mayes-county-ok",
+      "operator": "Google",
+      "location": "Mayes County, OK",
+      "year": 2025,
+      "withdrawalMillionGallons": 1396.7,
+      "consumptionMillionGallons": 1081.4,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "mesa-az",
+      "operator": "Google",
+      "location": "Mesa, AZ",
+      "year": 2025,
+      "withdrawalMillionGallons": 19.4,
+      "consumptionMillionGallons": 9.7,
+      "facilityIds": [
+        "dc_pnnl_01354"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "midlothian-tx",
+      "operator": "Google",
+      "location": "Midlothian, TX",
+      "year": 2025,
+      "withdrawalMillionGallons": 263.6,
+      "consumptionMillionGallons": 220.2,
+      "facilityIds": [
+        "dc_pnnl_00755",
+        "dc_pnnl_00756",
+        "dc_pnnl_01331"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "montgomery-county-tn",
+      "operator": "Google",
+      "location": "Montgomery County, TN",
+      "year": 2025,
+      "withdrawalMillionGallons": 499.5,
+      "consumptionMillionGallons": 424.7,
+      "facilityIds": [
+        "dc_pnnl_00757",
+        "dc_pnnl_00961",
+        "dc_pnnl_00962",
+        "dc_pnnl_01347"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "new-albany-oh",
+      "operator": "Google",
+      "location": "New Albany, OH",
+      "year": 2025,
+      "withdrawalMillionGallons": 1008.1,
+      "consumptionMillionGallons": 835.7,
+      "facilityIds": [
+        "dc_pnnl_00758",
+        "dc_pnnl_01053",
+        "dc_pnnl_01091",
+        "dc_pnnl_01092",
+        "dc_pnnl_01238",
+        "dc_pnnl_01239",
+        "dc_pnnl_01240",
+        "dc_pnnl_01295",
+        "dc_pnnl_01360",
+        "dc_pnnl_01361"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "new-haven-in",
+      "operator": "Google",
+      "location": "New Haven, IN",
+      "year": 2025,
+      "withdrawalMillionGallons": 62.2,
+      "consumptionMillionGallons": 37.8,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "omaha-ne",
+      "operator": "Google",
+      "location": "Omaha, NE",
+      "year": 2025,
+      "withdrawalMillionGallons": 241.8,
+      "consumptionMillionGallons": 183.9,
+      "facilityIds": [
+        "dc_pnnl_01273",
+        "dc_pnnl_01274",
+        "dc_pnnl_01275"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "papillion-ne",
+      "operator": "Google",
+      "location": "Papillion, NE",
+      "year": 2025,
+      "withdrawalMillionGallons": 677.8,
+      "consumptionMillionGallons": 548.2,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "pflugerville-tx",
+      "operator": "Google",
+      "location": "Pflugerville, TX",
+      "year": 2025,
+      "withdrawalMillionGallons": 0.4,
+      "consumptionMillionGallons": 0.1,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "phoenix-az",
+      "operator": "Google",
+      "location": "Phoenix, AZ",
+      "year": 2025,
+      "withdrawalMillionGallons": 0.5,
+      "consumptionMillionGallons": 0.1,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "red-oak-tx",
+      "operator": "Google",
+      "location": "Red Oak, TX",
+      "year": 2025,
+      "withdrawalMillionGallons": 67.0,
+      "consumptionMillionGallons": 50.4,
+      "facilityIds": [
+        "dc_pnnl_01282"
+      ],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "sterling-va",
+      "operator": "Google",
+      "location": "Sterling, VA",
+      "year": 2025,
+      "withdrawalMillionGallons": 258.4,
+      "consumptionMillionGallons": 199.8,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "storey-county-nv",
+      "operator": "Google",
+      "location": "Storey County, NV",
+      "year": 2025,
+      "withdrawalMillionGallons": 66.7,
+      "consumptionMillionGallons": 6.7,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    },
+    {
+      "id": "the-dalles-or",
+      "operator": "Google",
+      "location": "The Dalles, OR",
+      "year": 2025,
+      "withdrawalMillionGallons": 654.3,
+      "consumptionMillionGallons": 469.0,
+      "facilityIds": [
+        "dc_pnnl_00171",
+        "dc_pnnl_00602"
+      ],
+      "sourceDescription": "City of The Dalles municipal supply; local streams and groundwater. Source description is from Google\u2019s April 2023 water profile, not a 2025 source-share measurement.",
+      "sourceUrl": "https://www.gstatic.com/gumdrop/sustainability/2023-data-center-water-profile-the-dalles.pdf"
+    },
+    {
+      "id": "wilmer-tx",
+      "operator": "Google",
+      "location": "Wilmer, TX",
+      "year": 2025,
+      "withdrawalMillionGallons": 2.6,
+      "consumptionMillionGallons": 0.3,
+      "facilityIds": [],
+      "sourceDescription": null,
+      "sourceUrl": null
+    }
+  ]
+}

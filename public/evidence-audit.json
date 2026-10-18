@@ -1,0 +1,30 @@
+{
+  "reviewedAt": "2026-10-16",
+  "scope": "Integrity and evidence coverage; not independent verification of every facility",
+  "facilities": {
+    "records": 1499,
+    "missingOperator": 519,
+    "missingCapacity": 1479,
+    "missingUtility": 1479,
+    "unverifiedPpaTags": 409
+  },
+  "plants": {
+    "rawRecords": 14793,
+    "displayedFuelRecords": 11159,
+    "exactDuplicateDisplayedRows": 0,
+    "identityWarning": "Original plant identifiers absent. Counts are records, not verified unique plants."
+  },
+  "water": {
+    "reportingLocations": 26,
+    "mappedLocations": 16,
+    "sourceReferences": 3,
+    "watershedPolygons": 64
+  },
+  "checksums": {
+    "public/datacenters.json": "1fd039a9e6b521a73e74bece59e3127db2ca8142a9ea93ddbaa267a7b8e5aa0b",
+    "public/powerplants.json": "fea0ef748db8033f76851edd5f3fbeed7260b5fa0b7f52b6bd4a0fac9168ee69",
+    "public/watersheds.json": "41684c5e96197b43f9bd387d5ba1df1ab30ab4ba6daeb4b9379c59aef8dd0618",
+    "src/data/water-disclosures.json": "8eee221463da3f1cffad1be324587a15ad1ca4498ec93d9f0701b95ef41088e5",
+    "src/data/water-history.json": "3b7b8b06d3a01df1a12ea50cc42443b2c6f4e641ace71b69ffbfa6a023ee440d"
+  }
+}

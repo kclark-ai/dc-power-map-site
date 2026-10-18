@@ -1,0 +1,98 @@
+{
+  "berkeley-county-sc": [
+    "South Atlantic-Gulf Region 03",
+    "Edisto-Santee 0305",
+    "Cooper 03050201",
+    "Back River 030502010704"
+  ],
+  "bristow-va": [
+    "Mid Atlantic Region 02",
+    "Potomac 0207",
+    "Middle Potomac-Anacostia-Occoquan 02070010",
+    "Rocky Branch-Broad Run 020700100504"
+  ],
+  "council-bluffs-ia": [
+    "Missouri Region 10",
+    "Missouri-Little Sioux 1023",
+    "Big Papillion-Mosquito 10230006",
+    "Lake Manawa-Missouri River 102300060602"
+  ],
+  "douglas-county-ga": [
+    "South Atlantic-Gulf Region 03",
+    "Apalachicola 0313",
+    "Middle Chattahoochee-Lake Harding 03130002",
+    "Wilson Creek-Chattahoochee River 031300020104"
+  ],
+  "henderson-nv": [
+    "Lower Colorado Region 15",
+    "Lower Colorado-Lake Mead 1501",
+    "Las Vegas Wash 15010015",
+    "City of Henderson-Las Vegas Wash 150100150708"
+  ],
+  "jackson-county-al": [
+    "Tennessee Region 06",
+    "Middle Tennessee-Elk 0603",
+    "Guntersville Lake 06030001",
+    "Widows Creek 060300010204"
+  ],
+  "lancaster-oh": [
+    "Ohio Region 05",
+    "Upper Ohio 0503",
+    "Hocking 05030204",
+    "Headwaters Hocking River 050302040401"
+  ],
+  "lenoir-nc": [
+    "South Atlantic-Gulf Region 03",
+    "Edisto-Santee 0305",
+    "Upper Catawba 03050101",
+    "Upper Lower Creek 030501010701"
+  ],
+  "lockbourne-oh": [
+    "Ohio Region 05",
+    "Scioto 0506",
+    "Upper Scioto 05060001",
+    "Grant Run-Scioto River 050600012303"
+  ],
+  "mesa-az": [
+    "Lower Colorado Region 15",
+    "Middle Gila 1505",
+    "Middle Gila 15050100",
+    "Double Knolls-Roosevelt Canal 150501000807"
+  ],
+  "midlothian-tx": [
+    "Texas-Gulf Region 12",
+    "Trinity 1203",
+    "Lower West Fork Trinity 12030102",
+    "Soap Creek 120301020602"
+  ],
+  "montgomery-county-tn": [
+    "Ohio Region 05",
+    "Cumberland 0513",
+    "Red 05130206",
+    "Spring Creek 051302060603"
+  ],
+  "new-albany-oh": [
+    "Ohio Region 05",
+    "Scioto 0506",
+    "Upper Scioto 05060001",
+    "Headwaters Blacklick Creek 050600011503"
+  ],
+  "omaha-ne": [
+    "Missouri Region 10",
+    "Missouri-Little Sioux 1023",
+    "Big Papillion-Mosquito 10230006",
+    "Little Papillion Creek 102300060204"
+  ],
+  "red-oak-tx": [
+    "Texas-Gulf Region 12",
+    "Trinity 1203",
+    "Upper Trinity 12030105",
+    "Middle Red Oak Creek 120301050305"
+  ],
+  "the-dalles-or": [
+    "Pacific Northwest Region 17",
+    "Middle Columbia 1707",
+    "Middle Columbia-Hood 17070105",
+    "Town of Murdock-Columbia River 170701050406"
+  ]
+}

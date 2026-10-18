@@ -3,21 +3,30 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check": "astro check",
+    "test": "node --test tests/*.test.mjs && node scripts/validate-water.mjs && node scripts/check-evidence.mjs && node scripts/validate-grid.mjs && node scripts/validate-project-register.mjs",
+    "verify": "npm run check && npm run test && npm run build",
+    "release:check": "node scripts/verify-deploy.mjs && npm run verify && npm audit --audit-level=high"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.5",
+    "@astrojs/react": "^7.1.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "astro": "^6.3.3",
+    "astro": "^7.4.0",
     "mapbox-gl": "^3.23.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/geojson": "^7946.0.16",
+    "typescript": "^6.0.3"
   }
 }

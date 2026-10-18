@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-05-15",
+  "record_count": 1499,
+  "sources": {
+    "pnnl_im3": "2025-06-06",
+    "eia_form860": "2023",
+    "eia_form923": "2023",
+    "eia_territories": "2024"
+  },
+  "atlas_review": {
+    "checked_at": "2026-10-16",
+    "source": "https://github.com/IMMM-SFA/datacenter-atlas/blob/main/static/im3_datacenter_centroids.geojson",
+    "upstream_location_count": 1382,
+    "unmatched_locations_beyond_500m": 0,
+    "method": "Spatial coverage check at 500 m, not record identity or status verification. Existing inventory retained; no claim of nationwide completeness.",
+    "download_sha256": "2e7bd7e650fe86fe0d156b4e483ebd331cfa98a0468ce33b932f8c1b6c3245df"
+  },
+  "water_disclosures": {
+    "period": "2025",
+    "report": "Google 2026 Environmental Report, p. 97",
+    "us_reporting_locations": 26,
+    "checked_at": "2026-10-16"
+  }
+}

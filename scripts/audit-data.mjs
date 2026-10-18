@@ -1,0 +1,17 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const read=p=>JSON.parse(readFileSync(p,'utf8'));
+const dc=read('public/datacenters.json').data,plants=read('public/powerplants.json').plants;
+const water=read('src/data/water-disclosures.json'),watersheds=read('public/watersheds.json');
+const fuels=new Set(['coal','natural_gas','nuclear','solar','wind','hydro']);
+const valid=r=>Number.isFinite(r.lat)&&Number.isFinite(r.lon)&&Math.abs(r.lat)<=90&&Math.abs(r.lon)<=180;
+assert.equal(new Set(dc.map(r=>r.id)).size,dc.length,'Facility IDs must be unique');
+assert.ok(dc.every(valid));assert.ok(plants.every(valid));
+const shown=plants.filter(p=>p.lat&&p.lon&&fuels.has(p.fuel_type));
+const keys=shown.map(p=>JSON.stringify([p.name,p.lat,p.lon,p.fuel_type,p.capacity_mw]));
+const exactDuplicates=keys.length-new Set(keys).size;
+const hash=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
+const audit={reviewedAt:'2026-10-16',scope:'Integrity and evidence coverage; not independent verification of every facility',facilities:{records:dc.length,missingOperator:dc.filter(r=>!r.operator).length,missingCapacity:dc.filter(r=>!(r.capacity_mw>0)).length,missingUtility:dc.filter(r=>!r.utility?.name).length,unverifiedPpaTags:dc.filter(r=>r.direct_ppas?.length).length},plants:{rawRecords:plants.length,displayedFuelRecords:shown.length,exactDuplicateDisplayedRows:exactDuplicates,identityWarning:'Original plant identifiers absent. Counts are records, not verified unique plants.'},water:{reportingLocations:water.records.length,mappedLocations:water.records.filter(r=>r.facilityIds.length).length,sourceReferences:water.records.filter(r=>r.sourceUrl).length,watershedPolygons:watersheds.features.length},checksums:Object.fromEntries(['public/datacenters.json','public/powerplants.json','public/watersheds.json','src/data/water-disclosures.json','src/data/water-history.json'].map(p=>[p,hash(p)]))};
+writeFileSync('public/evidence-audit.json',JSON.stringify(audit,null,2)+'\n');
+console.log(JSON.stringify({...audit,checksums:undefined},null,2));

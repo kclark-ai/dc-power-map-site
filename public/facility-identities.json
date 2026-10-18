@@ -1,0 +1,112 @@
+{
+  "reviewedAt": "2026-10-18",
+  "scope": "Selected source-reported campus and business relationships. Candidate inventory associations are not verified building or parcel matches. Brand/operator identity does not establish legal property ownership.",
+  "profiles": [
+    {
+      "id": "the-dalles-or",
+      "displayName": "Google \u00b7 The Dalles campus",
+      "candidateInventoryIds": [
+        "dc_pnnl_00171",
+        "dc_pnnl_00602"
+      ],
+      "association": "campus_context_only",
+      "scope": "Operator location page identifies a campus/community. Individual buildings, parcels and inventory coordinates have not been reconciled.",
+      "reviewedAt": "2026-10-18",
+      "sourcePublished": null,
+      "sourceUrl": "https://www.datacenters.google/locations/oregon/",
+      "relationships": [
+        {
+          "role": "Campus operator",
+          "business": "Google",
+          "basis": "Operator location page; observed October 18, 2026. No opening date inferred from retrieval."
+        }
+      ],
+      "propertyOwner": null,
+      "tenants": null
+    },
+    {
+      "id": "council-bluffs-ia",
+      "displayName": "Google \u00b7 Council Bluffs campus",
+      "candidateInventoryIds": [
+        "dc_pnnl_00513",
+        "dc_pnnl_00929",
+        "dc_pnnl_00930",
+        "dc_pnnl_00931",
+        "dc_pnnl_00932",
+        "dc_pnnl_00933",
+        "dc_pnnl_00934",
+        "dc_pnnl_00935",
+        "dc_pnnl_00936",
+        "dc_pnnl_00937",
+        "dc_pnnl_00938",
+        "dc_pnnl_00939",
+        "dc_pnnl_00940",
+        "dc_pnnl_00941",
+        "dc_pnnl_00942",
+        "dc_pnnl_01152",
+        "dc_pnnl_01153"
+      ],
+      "association": "campus_context_only",
+      "scope": "Operator location page identifies a campus/community. Individual buildings, parcels and inventory coordinates have not been reconciled.",
+      "reviewedAt": "2026-10-18",
+      "sourcePublished": null,
+      "sourceUrl": "https://www.datacenters.google/locations/iowa/",
+      "relationships": [
+        {
+          "role": "Campus operator",
+          "business": "Google",
+          "basis": "Operator location page; observed October 18, 2026. No opening date inferred from retrieval."
+        }
+      ],
+      "propertyOwner": null,
+      "tenants": null
+    },
+    {
+      "id": "douglas-county-ga",
+      "displayName": "Google \u00b7 Douglas County campus",
+      "candidateInventoryIds": [
+        "dc_pnnl_00512"
+      ],
+      "association": "campus_context_only",
+      "scope": "Operator location page identifies a campus/community. Individual buildings, parcels and inventory coordinates have not been reconciled.",
+      "reviewedAt": "2026-10-18",
+      "sourcePublished": null,
+      "sourceUrl": "https://www.datacenters.google/locations/georgia/",
+      "relationships": [
+        {
+          "role": "Campus operator",
+          "business": "Google",
+          "basis": "Operator location page; observed October 18, 2026. No opening date inferred from retrieval."
+        }
+      ],
+      "propertyOwner": null,
+      "tenants": null
+    },
+    {
+      "id": "muskogee-hosting",
+      "displayName": "Muskogee \u00b7 Core Scientific HPC project",
+      "candidateInventoryIds": [
+        "dc_emerging_0014"
+      ],
+      "association": "potential_project_match",
+      "scope": "Dated project announcement; not confirmation of present operation or the inherited marker identity.",
+      "reviewedAt": "2026-10-18",
+      "sourcePublished": "2024-11-18",
+      "sourceUrl": "https://investors.corescientific.com/news-events/press-releases/detail/99/core-scientific-and-port-muskogee-break-ground-on-100-mw-hpc-data-center",
+      "relationships": [
+        {
+          "role": "Reported developer / hosting provider",
+          "business": "Core Scientific",
+          "basis": "November 18, 2024 groundbreaking announcement."
+        },
+        {
+          "role": "Reported hosting customer",
+          "business": "CoreWeave",
+          "basis": "The announcement describes hosting CoreWeave GPUs for an undisclosed end client; not proof of property ownership or current occupancy."
+        }
+      ],
+      "propertyOwner": null,
+      "tenants": null
+    }
+  ]
+}

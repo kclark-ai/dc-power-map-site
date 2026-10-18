@@ -1,4 +1,5 @@
 import type * as GeoJSON from 'geojson';
+import {identitySearchText} from './FacilityIdentity';
 import FacilityPanel, {type FacilityTab} from './FacilityPanel';
 import {parseView,serializeView} from '../lib/view-state.mjs';
 import WaterExplorer from './WaterExplorer';
@@ -110,6 +111,7 @@ function searchAll(q: string, dcs: DataCenter[], plants: any[]): SearchResult[] 
     const s = Math.max(
       rank(dc.name),
       rank(dc.operator) * 0.9,
+      rank(identitySearchText(dc.id)) * 0.8,
       rank(dc.state) * 0.7,
       rank((dc as any).county) * 0.6,
     );
@@ -120,6 +122,7 @@ function searchAll(q: string, dcs: DataCenter[], plants: any[]): SearchResult[] 
         secondary: [
           dc.operator && dc.operator !== dc.name ? dc.operator : null,
           dc.status !== 'operational' ? dc.status.replace(/_/g, ' ') : null,
+          rank(identitySearchText(dc.id)) > 0 ? 'Related campus/project source; identity unresolved' : null,
         ].filter(Boolean).join(' · '),
         state: dc.state || '', lat: dc.lat, lon: dc.lon,
         score: s, payload: dc,

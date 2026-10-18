@@ -27,3 +27,7 @@ Exports carry the same caveats, claim scope and sources as the interface. Missin
 ## Completed desk reviews
 
 Every inherited future-project record has an initial review disposition in `src/data/future-project-reviews.json`. Review completion does not verify current status, phase identity, coordinates, demand or utility. A source about another place, an office, a lab, a cable landing, or a state-wide investment is context only. Failed search is not proof of absence. Undated source observations do not create opening dates. Municipal staff recommendations are not final approvals. Source-note coverage and completed desk-review coverage are separate counts.
+
+## Business identity and ownership
+
+`public/facility-identities.json` stores selected source-reported campus and project relationships separately from inherited inventory names/operators. Every profile carries a primary URL, publication date when supplied, review date, association scope and role-specific explanations. Candidate links do not verify parcel or building identities. Do not infer legal ownership from an operator brand, corporate parent, hosting customer or data-center end user. A future legal-owner claim requires a dated parcel/title record and documented corporate linkage. Company-name matching alone cannot fill missing operators. Hosting customers are not automatically building tenants. These limits travel with register and comparison exports.

@@ -11,7 +11,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
-    "test": "node --test tests/*.test.mjs && node scripts/validate-water.mjs && node scripts/check-evidence.mjs && node scripts/validate-grid.mjs && node scripts/validate-project-register.mjs",
+    "test": "node --test tests/*.test.mjs && node scripts/validate-water.mjs && node scripts/check-evidence.mjs && node scripts/validate-grid.mjs && node scripts/validate-project-register.mjs && node scripts/validate-identities.mjs",
     "verify": "npm run check && npm run test && npm run build",
     "release:check": "node scripts/verify-deploy.mjs && npm run verify && npm audit --audit-level=high"
   },
